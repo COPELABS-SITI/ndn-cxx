@@ -12,7 +12,7 @@ GIT_TAG_PREFIX = "ndn-cxx-"
 def options(opt):
     opt.load(['compiler_cxx', 'gnu_dirs', 'c_osx'])
     opt.load(['default-compiler-flags', 'coverage', 'osx-security', 'pch',
-              'boost', 'cryptopp', 'sqlite3',
+              'boost', 'cryptopp', 'sqlite3', 'openssl',
               'doxygen', 'sphinx_build', 'type_traits', 'compiler-features'],
              tooldir=['.waf-tools'])
 
@@ -67,7 +67,7 @@ def configure(conf):
 
     conf.load(['compiler_cxx', 'gnu_dirs', 'c_osx',
                'default-compiler-flags', 'osx-security', 'pch',
-               'boost', 'cryptopp', 'sqlite3',
+               'boost', 'cryptopp', 'sqlite3', 'openssl',
                'doxygen', 'sphinx_build', 'type_traits', 'compiler-features'])
 
     conf.env['WITH_TESTS'] = conf.options.with_tests
@@ -99,6 +99,7 @@ main(int, char**)
 
     conf.check_sqlite3(mandatory=True)
     conf.check_cryptopp(mandatory=True, use='PTHREAD')
+    conf.check_openssl(mandatory=True)
 
     USED_BOOST_LIBS = ['system', 'filesystem', 'date_time', 'iostreams',
                        'regex', 'program_options', 'chrono', 'random']
@@ -157,7 +158,7 @@ def build(bld):
         source=bld.path.ant_glob('src/**/*.cpp',
                                  excl=['src/**/*-osx.cpp', 'src/**/*-sqlite3.cpp']),
         headers='src/common-pch.hpp',
-        use='version BOOST CRYPTOPP SQLITE3 RT PTHREAD',
+        use='version BOOST CRYPTOPP SQLITE3 RT PTHREAD OPENSSL',
         includes=". src",
         export_includes="src",
         install_path='${LIBDIR}',

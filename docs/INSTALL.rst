@@ -32,8 +32,9 @@ Required:
 ~~~~~~~~~
 
 -  ``python`` >= 2.6
--  ``libsqlite3``
--  ``libcrypto++``
+-  ``SQLite3``
+-  ``Crypto++``
+-  ``openssl``
 -  ``pkg-config``
 -  Boost libraries >= 1.48
 -  OSX Security framework (on OSX platform only)
@@ -61,7 +62,7 @@ development tools and libraries, and ndn-cxx prerequisites.
    In a terminal, enter::
 
        sudo apt-get install build-essential
-       sudo apt-get install libsqlite3-dev libcrypto++-dev
+       sudo apt-get install libsqlite3-dev libcrypto++-dev libssl-dev
 
        # For Ubuntu 12.04
        sudo apt-get install libboost1.48-all-dev
@@ -74,7 +75,7 @@ development tools and libraries, and ndn-cxx prerequisites.
    In a terminal, enter::
 
        sudo yum install gcc-g++ git
-       sudo yum install sqlite-devel cryptopp-devel boost-devel
+       sudo yum install sqlite-devel cryptopp-devel boost-devel openssl
 
 Optional:
 ~~~~~~~~~
