@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /**
- * Copyright (c) 2013-2014 Regents of the University of California.
+ * Copyright (c) 2013-2015 Regents of the University of California.
  *
  * This file is part of ndn-cxx library (NDN C++ library with eXperimental eXtensions).
  *
@@ -19,58 +19,23 @@
  * See AUTHORS.md for complete list of ndn-cxx authors and contributors.
  */
 
-#ifndef NDN_SECURITY_COMMON_HPP
-#define NDN_SECURITY_COMMON_HPP
-
-#include "../common.hpp"
+#include "openssl-helper.hpp"
 
 namespace ndn {
+namespace security {
+namespace detail {
 
-namespace signed_interest{
+const EVP_MD*
+toDigestEvpMd(DigestAlgorithm algo)
+{
+  switch (algo) {
+  case DIGEST_ALGORITHM_SHA256:
+    return EVP_sha256();
+  default:
+    return nullptr;
+  }
+}
 
-const ssize_t POS_SIG_VALUE = -1;
-const ssize_t POS_SIG_INFO = -2;
-const ssize_t POS_RANDOM_VAL = -3;
-const ssize_t POS_TIMESTAMP = -4;
-
-const size_t MIN_LENGTH = 4;
-
-} // namespace signed_interest
-
-enum KeyType {
-  KEY_TYPE_NONE  = 0,
-  /// @deprecated use KEY_TYPE_NONE
-  KEY_TYPE_NULL = KEY_TYPE_NONE,
-
-  KEY_TYPE_RSA   = 1,
-  KEY_TYPE_ECDSA = 2,
-  KEY_TYPE_AES   = 128
-};
-
-enum KeyClass {
-  KEY_CLASS_NONE,
-  KEY_CLASS_PUBLIC,
-  KEY_CLASS_PRIVATE,
-  KEY_CLASS_SYMMETRIC
-};
-
-enum DigestAlgorithm {
-  DIGEST_ALGORITHM_NONE = 0,
-  DIGEST_ALGORITHM_SHA256 = 1
-};
-
-enum EncryptMode {
-  ENCRYPT_MODE_DEFAULT,
-  ENCRYPT_MODE_CFB_AES
-  // ENCRYPT_MODE_CBC_AES
-};
-
-enum AclType {
-  ACL_TYPE_NONE,
-  ACL_TYPE_PUBLIC,
-  ACL_TYPE_PRIVATE
-};
-
+} // namespace detail
+} // namespace security
 } // namespace ndn
-
-#endif // NDN_SECURITY_COMMON_HPP
