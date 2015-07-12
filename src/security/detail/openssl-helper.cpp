@@ -36,6 +36,28 @@ toDigestEvpMd(DigestAlgorithm algo)
   }
 }
 
+EvpPkeyCtx::EvpPkeyCtx(EVP_PKEY* key)
+  : m_ctx(EVP_PKEY_CTX_new(key, nullptr))
+{
+  BOOST_ASSERT(m_ctx != nullptr);
+}
+
+EvpPkeyCtx::~EvpPkeyCtx()
+{
+  EVP_PKEY_CTX_free(m_ctx);
+}
+
+Bio::Bio(BIO_METHOD* method)
+  : m_bio(BIO_new(method))
+{
+  BOOST_ASSERT(m_bio != nullptr);
+}
+
+Bio::~Bio()
+{
+  BIO_free_all(m_bio);
+}
+
 } // namespace detail
 } // namespace security
 } // namespace ndn

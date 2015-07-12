@@ -32,6 +32,42 @@ namespace detail {
 const EVP_MD*
 toDigestEvpMd(DigestAlgorithm algo);
 
+class EvpPkeyCtx
+{
+public:
+  explicit
+  EvpPkeyCtx(EVP_PKEY* key);
+
+  ~EvpPkeyCtx();
+
+  EVP_PKEY_CTX*
+  get() const
+  {
+    return m_ctx;
+  }
+
+private:
+  EVP_PKEY_CTX* m_ctx;
+};
+
+class Bio
+{
+public:
+  explicit
+  Bio(BIO_METHOD* method);
+
+  ~Bio();
+
+  BIO*
+  get() const
+  {
+    return m_bio;
+  }
+
+private:
+  BIO* m_bio;
+};
+
 } // namespace detail
 } // namespace util
 } // namespace ndn
