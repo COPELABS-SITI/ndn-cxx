@@ -19,53 +19,51 @@
  * See AUTHORS.md for complete list of ndn-cxx authors and contributors.
  */
 
-#include "security/key-container.hpp"
-#include "security/pib.hpp"
-#include "security/pib-memory.hpp"
+#include "security/pib/identity-container.hpp"
+#include "security/pib/pib.hpp"
+#include "security/pib/pib-memory.hpp"
 #include "pib-data-fixture.hpp"
 
 #include "boost-test.hpp"
 
 namespace ndn {
 namespace security {
+namespace pib {
 namespace tests {
 
-BOOST_AUTO_TEST_SUITE(SecurityKeyContainer)
+BOOST_AUTO_TEST_SUITE(SecurityIdentityContainer)
 
-BOOST_FIXTURE_TEST_CASE(TestKeyContainer, PibDataFixture)
+BOOST_FIXTURE_TEST_CASE(TestIdentityContainer, PibDataFixture)
 {
   auto pibImpl = make_shared<PibMemory>();
   Pib pib("pib-memory", "", pibImpl);
 
   Identity identity1 = pib.addIdentity(id1);
+  Identity identity2 = pib.addIdentity(id2);
 
-  Key key11 = identity1.addKey(id1Key1, id1Key1Name.get(-1));
-  Key key12 = identity1.addKey(id1Key2, id1Key2Name.get(-1));
-
-  KeyContainer container = identity1.getKeys();
+  IdentityContainer container = pib.getIdentities();
   BOOST_CHECK_EQUAL(container.size(), 2);
-  BOOST_CHECK(container.find(id1Key1Name.get(-1)) != container.end());
-  BOOST_CHECK(container.find(id1Key2Name.get(-1)) != container.end());
+  BOOST_CHECK(container.find(id1) != container.end());
+  BOOST_CHECK(container.find(id2) != container.end());
 
-  std::set<name::Component> keyNames;
-  keyNames.insert(id1Key1Name.get(-1));
-  keyNames.insert(id1Key2Name.get(-1));
+  std::set<Name> idNames;
+  idNames.insert(id1);
+  idNames.insert(id2);
 
-  KeyContainer::const_iterator it = container.begin();
-  std::set<name::Component>::const_iterator testIt = keyNames.begin();
-  BOOST_CHECK_EQUAL((*it).getKeyId(), *testIt);
+  IdentityContainer::const_iterator it = container.begin();
+  std::set<Name>::const_iterator testIt = idNames.begin();
+  BOOST_CHECK_EQUAL((*it).getName(), *testIt);
   it++;
   testIt++;
-  BOOST_CHECK_EQUAL((*it).getKeyId(), *testIt);
+  BOOST_CHECK_EQUAL((*it).getName(), *testIt);
   ++it;
   testIt++;
   BOOST_CHECK(it == container.end());
 
   size_t count = 0;
-  testIt = keyNames.begin();
-  for (const auto& key : container) {
-    BOOST_CHECK_EQUAL(key.getIdentity(), id1);
-    BOOST_CHECK_EQUAL(key.getKeyId(), *testIt);
+  testIt = idNames.begin();
+  for (const auto& identity : container) {
+    BOOST_CHECK_EQUAL(identity.getName(), *testIt);
     testIt++;
     count++;
   }
@@ -75,5 +73,6 @@ BOOST_FIXTURE_TEST_CASE(TestKeyContainer, PibDataFixture)
 BOOST_AUTO_TEST_SUITE_END()
 
 } // namespace tests
+} // namespace pib
 } // namespace security
 } // namespace ndn

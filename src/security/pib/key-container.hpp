@@ -19,14 +19,15 @@
  * See AUTHORS.md for complete list of ndn-cxx authors and contributors.
  */
 
-#ifndef NDN_SECURITY_KEY_CONTAINER_HPP
-#define NDN_SECURITY_KEY_CONTAINER_HPP
+#ifndef NDN_SECURITY_PIB_KEY_CONTAINER_HPP
+#define NDN_SECURITY_PIB_KEY_CONTAINER_HPP
 
 #include <set>
 #include "key.hpp"
 
 namespace ndn {
 namespace security {
+namespace pib {
 
 class PibImpl;
 
@@ -57,12 +58,12 @@ public:
 
   private:
     const_iterator(const Name& identity,
-                   std::set<name::Component>::const_iterator it,
+                   std::set<Name>::const_iterator it,
                    shared_ptr<PibImpl> impl);
 
   private:
     Name m_identity;
-    std::set<name::Component>::const_iterator m_it;
+    std::set<Name>::const_iterator m_it;
     shared_ptr<PibImpl> m_impl;
   };
 
@@ -72,7 +73,7 @@ public:
   KeyContainer();
 
   KeyContainer(const Name& identity,
-               std::set<name::Component>&& keyIds,
+               std::set<Name>&& keyNames,
                shared_ptr<PibImpl> impl);
 
   const_iterator
@@ -82,18 +83,22 @@ public:
   end() const;
 
   const_iterator
-  find(const name::Component& keyId) const;
+  find(const Name& keyName) const;
 
   size_t
   size() const;
 
 private:
   Name m_identity;
-  std::set<name::Component> m_keyIds;
+  std::set<Name> m_keyNames;
   shared_ptr<PibImpl> m_impl;
 };
+
+} // namespace pib
+
+using pib::KeyContainer;
 
 } // namespace security
 } // namespace ndn
 
-#endif // NDN_SECURITY_KEY_CONTAINER_HPP
+#endif // NDN_SECURITY_PIB_KEY_CONTAINER_HPP

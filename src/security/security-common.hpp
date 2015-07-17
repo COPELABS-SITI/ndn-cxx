@@ -19,8 +19,8 @@
  * See AUTHORS.md for complete list of ndn-cxx authors and contributors.
  */
 
-#ifndef NDN_SECURITY_COMMON_HPP
-#define NDN_SECURITY_COMMON_HPP
+#ifndef NDN_CXX_SECURITY_COMMON_HPP
+#define NDN_CXX_SECURITY_COMMON_HPP
 
 #include "../common.hpp"
 #include "../name.hpp"
@@ -120,4 +120,4 @@ operator<<(std::ostream& os, AclType aclType);
 
 } // namespace ndn
 
-#endif // NDN_SECURITY_COMMON_HPP
+#endif // NDN_CXX_SECURITY_COMMON_HPP

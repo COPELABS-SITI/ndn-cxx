@@ -76,6 +76,12 @@ Certificate::getIdentity() const
   return getName().getPrefix(KEY_ID_OFFSET);
 }
 
+name::Component
+Certificate::getKeyId() const
+{
+  return getName().get(KEY_ID_OFFSET);
+}
+
 const Buffer
 Certificate::getPublicKey() const
 {
@@ -103,5 +109,38 @@ Certificate::getExtension(uint32_t type) const
 }
 
 } // namespace tmp
+
+bool
+isCertName(const Name& certName)
+{
+  return (certName.size() > 3 &&
+          certName.get(tmp::Certificate::KEY_COMPONENT_OFFSET) == tmp::Certificate::KEY_COMPONENT); // "/.../[key-id]/KEY/[version]"
+}
+
+bool
+isKeyName(const Name& keyName)
+{
+  return (keyName.size() > 2 && keyName.get(-1) == tmp::Certificate::KEY_COMPONENT); // "/.../[key-id]/KEY"
+}
+
+Name
+toKeyName(const Name& certName)
+{
+  if (!isCertName(certName))
+    BOOST_THROW_EXCEPTION(std::runtime_error("wrong cert name"));
+
+  return certName.getPrefix(tmp::Certificate::VERSION_OFFSET); // trim version
+}
+
+std::tuple<Name, name::Component>
+parseKeyName(const Name& keyName)
+{
+  if (!isKeyName(keyName))
+    BOOST_THROW_EXCEPTION(std::runtime_error("wrong key name"));
+
+  // parse identity & key-id from "/.../[key-id]/KEY"
+  return std::make_tuple(keyName.getPrefix(-2), keyName.get(-2));
+}
+
 } // namespace security
 } // namespace ndn

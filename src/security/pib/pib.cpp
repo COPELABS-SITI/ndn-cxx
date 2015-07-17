@@ -24,6 +24,7 @@
 
 namespace ndn {
 namespace security {
+namespace pib {
 
 Pib::Pib(const std::string scheme, const std::string& location, shared_ptr<PibImpl> impl)
   : m_scheme(scheme)
@@ -115,6 +116,6 @@ Pib::getDefaultIdentity() const
   return m_defaultIdentity;
 }
 
-
+} // namespace pib
 } // namespace security
 } // namespace ndn

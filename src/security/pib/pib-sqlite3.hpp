@@ -28,6 +28,7 @@ struct sqlite3;
 
 namespace ndn {
 namespace security {
+namespace pib {
 
 /**
  * @brief Pib backend implementation based on SQLite3 database
@@ -60,14 +61,24 @@ public:
 
 public: // TpmLocator management
 
+  /**
+   * @brief Set the corresponding TPM information to @p tpmLocator.
+   *
+   * If the provided @p tpmLocator is different from the existing one, the
+   * content in PIB will be cleaned up, otherwise nothing will be changed.
+   *
+   * @param tmpLocator The name for the new tmpLocator
+   */
   virtual void
   setTpmLocator(const std::string& tpmLocator) NDN_CXX_DECL_FINAL;
 
+  /**
+   * @brief Get TPM Locator
+   */
   virtual std::string
   getTpmLocator() const NDN_CXX_DECL_FINAL;
 
 public: // Identity management
-
   virtual bool
   hasIdentity(const Name& identity) const NDN_CXX_DECL_FINAL;
 
@@ -87,56 +98,55 @@ public: // Identity management
   getDefaultIdentity() const NDN_CXX_DECL_FINAL;
 
 public: // Key management
-
   virtual bool
-  hasKey(const Name& identity, const name::Component& keyId) const NDN_CXX_DECL_FINAL;
+  hasKey(const Name& keyName) const NDN_CXX_DECL_FINAL;
 
   virtual void
-  addKey(const Name& identity, const name::Component& keyId, const PublicKey& publicKey) NDN_CXX_DECL_FINAL;
+  addKey(const Name& identity, const Name& keyName,
+         const uint8_t* key, size_t keyLen) NDN_CXX_DECL_FINAL;
 
   virtual void
-  removeKey(const Name& identity, const name::Component& keyId) NDN_CXX_DECL_FINAL;
+  removeKey(const Name& keyName) NDN_CXX_DECL_FINAL;
 
-  virtual PublicKey
-  getKeyBits(const Name& identity, const name::Component& keyId) const NDN_CXX_DECL_FINAL;
+  virtual Buffer
+  getKeyBits(const Name& keyName) const NDN_CXX_DECL_FINAL;
 
-  virtual std::set<name::Component>
+  virtual std::set<Name>
   getKeysOfIdentity(const Name& identity) const NDN_CXX_DECL_FINAL;
 
   virtual void
-  setDefaultKeyOfIdentity(const Name& identity, const name::Component& keyId) NDN_CXX_DECL_FINAL;
+  setDefaultKeyOfIdentity(const Name& identity, const Name& keyName) NDN_CXX_DECL_FINAL;
 
-  virtual name::Component
+  virtual Name
   getDefaultKeyOfIdentity(const Name& identity) const NDN_CXX_DECL_FINAL;
 
 public: // Certificate Management
-
   virtual bool
   hasCertificate(const Name& certName) const NDN_CXX_DECL_FINAL;
 
   virtual void
-  addCertificate(const IdentityCertificate& certificate) NDN_CXX_DECL_FINAL;
+  addCertificate(const tmp::Certificate& certificate) NDN_CXX_DECL_FINAL;
 
   virtual void
   removeCertificate(const Name& certName) NDN_CXX_DECL_FINAL;
 
-  virtual IdentityCertificate
+  virtual tmp::Certificate
   getCertificate(const Name& certName) const NDN_CXX_DECL_FINAL;
 
   virtual std::set<Name>
-  getCertificatesOfKey(const Name& identity, const name::Component& keyId) const NDN_CXX_DECL_FINAL;
+  getCertificatesOfKey(const Name& keyName) const NDN_CXX_DECL_FINAL;
 
   virtual void
-  setDefaultCertificateOfKey(const Name& identity, const name::Component& keyId,
-                             const Name& certName) NDN_CXX_DECL_FINAL;
+  setDefaultCertificateOfKey(const Name& keyName, const Name& certName) NDN_CXX_DECL_FINAL;
 
-  virtual IdentityCertificate
-  getDefaultCertificateOfKey(const Name& identity, const name::Component& keyId) const NDN_CXX_DECL_FINAL;
+  virtual tmp::Certificate
+  getDefaultCertificateOfKey(const Name& keyName) const NDN_CXX_DECL_FINAL;
 
 private:
   sqlite3* m_database;
 };
 
+} // namespace pib
 } // namespace security
 } // namespace ndn
 

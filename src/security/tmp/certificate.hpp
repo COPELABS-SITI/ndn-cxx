@@ -52,6 +52,9 @@ public:
   Name
   getIdentity() const;
 
+  name::Component
+  getKeyId() const;
+
   /// @brief Get public key bits (in PKCS#8 format)
   const Buffer
   getPublicKey() const;
@@ -79,6 +82,19 @@ public:
 };
 
 } // namespace tmp
+
+bool
+isCertName(const Name& certName);
+
+bool
+isKeyName(const Name& keyName);
+
+Name
+toKeyName(const Name& certName);
+
+std::tuple<Name, name::Component>
+parseKeyName(const Name& keyName);
+
 } // namespace security
 } // namespace ndn
 

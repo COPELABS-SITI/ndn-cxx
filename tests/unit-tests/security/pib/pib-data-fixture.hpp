@@ -22,7 +22,7 @@
 #ifndef NDN_TESTS_PIB_DATA_FIXTURE_HPP
 #define NDN_TESTS_PIB_DATA_FIXTURE_HPP
 
-#include "security/identity-certificate.hpp"
+#include "security/tmp/certificate.hpp"
 
 #include "boost-test.hpp"
 
@@ -43,19 +43,19 @@ public:
   Name id2Key1Name;
   Name id2Key2Name;
 
-  PublicKey id1Key1;
-  PublicKey id1Key2;
-  PublicKey id2Key1;
-  PublicKey id2Key2;
+  Buffer id1Key1;
+  Buffer id1Key2;
+  Buffer id2Key1;
+  Buffer id2Key2;
 
-  IdentityCertificate id1Key1Cert1;
-  IdentityCertificate id1Key1Cert2;
-  IdentityCertificate id1Key2Cert1;
-  IdentityCertificate id1Key2Cert2;
-  IdentityCertificate id2Key1Cert1;
-  IdentityCertificate id2Key1Cert2;
-  IdentityCertificate id2Key2Cert1;
-  IdentityCertificate id2Key2Cert2;
+  tmp::Certificate id1Key1Cert1;
+  tmp::Certificate id1Key1Cert2;
+  tmp::Certificate id1Key2Cert1;
+  tmp::Certificate id1Key2Cert2;
+  tmp::Certificate id2Key1Cert1;
+  tmp::Certificate id2Key1Cert2;
+  tmp::Certificate id2Key2Cert1;
+  tmp::Certificate id2Key2Cert2;
 };
 
 } // namespace security

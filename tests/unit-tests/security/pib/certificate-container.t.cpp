@@ -19,15 +19,16 @@
  * See AUTHORS.md for complete list of ndn-cxx authors and contributors.
  */
 
-#include "security/certificate-container.hpp"
-#include "security/pib.hpp"
-#include "security/pib-memory.hpp"
+#include "security/pib/certificate-container.hpp"
+#include "security/pib/pib.hpp"
+#include "security/pib/pib-memory.hpp"
 #include "pib-data-fixture.hpp"
 
 #include "boost-test.hpp"
 
 namespace ndn {
 namespace security {
+namespace pib {
 namespace tests {
 
 BOOST_AUTO_TEST_SUITE(SecurityCertificateContainer)
@@ -38,7 +39,7 @@ BOOST_FIXTURE_TEST_CASE(TestCertificateContainer, PibDataFixture)
   Pib pib("pib-memory", "", pibImpl);
 
   Identity identity1 = pib.addIdentity(id1);
-  Key key11 = identity1.addKey(id1Key1, id1Key1Name.get(-1));
+  Key key11 = identity1.addKey(id1Key1.buf(), id1Key1.size(), id1Key1Name);
   key11.addCertificate(id1Key1Cert1);
   key11.addCertificate(id1Key1Cert2);
 
@@ -74,5 +75,6 @@ BOOST_FIXTURE_TEST_CASE(TestCertificateContainer, PibDataFixture)
 BOOST_AUTO_TEST_SUITE_END()
 
 } // namespace tests
+} // namespace pib
 } // namespace security
 } // namespace ndn

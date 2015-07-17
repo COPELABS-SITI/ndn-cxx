@@ -19,8 +19,8 @@
  * See AUTHORS.md for complete list of ndn-cxx authors and contributors.
  */
 
-#ifndef NDN_SECURITY_PIB_HPP
-#define NDN_SECURITY_PIB_HPP
+#ifndef NDN_SECURITY_PIB_PIB_HPP
+#define NDN_SECURITY_PIB_PIB_HPP
 
 #include "identity-container.hpp"
 
@@ -28,6 +28,9 @@ namespace ndn {
 namespace security {
 
 class KeyChain;
+
+namespace pib {
+
 class PibImpl;
 
 /**
@@ -181,7 +184,11 @@ protected:
   shared_ptr<PibImpl> m_impl;
 };
 
+} // namespace pib
+
+using pib::Pib;
+
 } // namespace security
 } // namespace ndn
 
-#endif // NDN_SECURITY_PIB_HPP
+#endif // NDN_SECURITY_PIB_PIB_HPP

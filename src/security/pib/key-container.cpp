@@ -24,9 +24,10 @@
 
 namespace ndn {
 namespace security {
+namespace pib {
 
 KeyContainer::const_iterator::const_iterator(const Name& identity,
-                                             std::set<name::Component>::const_iterator it,
+                                             std::set<Name>::const_iterator it,
                                              shared_ptr<PibImpl> impl)
   : m_identity(identity)
   , m_it(it)
@@ -37,7 +38,7 @@ KeyContainer::const_iterator::const_iterator(const Name& identity,
 Key
 KeyContainer::const_iterator::operator*()
 {
-  return Key(m_identity, *m_it, m_impl);
+  return Key(*m_it, m_impl);
 }
 
 KeyContainer::const_iterator&
@@ -72,10 +73,10 @@ KeyContainer::KeyContainer()
 }
 
 KeyContainer::KeyContainer(const Name& identity,
-                           std::set<name::Component>&& keyIds,
+                           std::set<Name>&& keyNames,
                            shared_ptr<PibImpl> impl)
   : m_identity(identity)
-  , m_keyIds(keyIds)
+  , m_keyNames(keyNames)
   , m_impl(impl)
 {
 }
@@ -83,26 +84,27 @@ KeyContainer::KeyContainer(const Name& identity,
 KeyContainer::const_iterator
 KeyContainer::begin() const
 {
-  return const_iterator(m_identity, m_keyIds.begin(), m_impl);
+  return const_iterator(m_identity, m_keyNames.begin(), m_impl);
 }
 
 KeyContainer::const_iterator
 KeyContainer::end() const
 {
-  return const_iterator(m_identity, m_keyIds.end(), m_impl);
+  return const_iterator(m_identity, m_keyNames.end(), m_impl);
 }
 
 KeyContainer::const_iterator
-KeyContainer::find(const name::Component& keyId) const
+KeyContainer::find(const Name& keyName) const
 {
-  return const_iterator(m_identity, m_keyIds.find(keyId), m_impl);
+  return const_iterator(m_identity, m_keyNames.find(keyName), m_impl);
 }
 
 size_t
 KeyContainer::size() const
 {
-  return m_keyIds.size();
+  return m_keyNames.size();
 }
 
+} // namespace pib
 } // namespace security
 } // namespace ndn

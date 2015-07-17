@@ -24,6 +24,7 @@
 
 namespace ndn {
 namespace security {
+namespace pib {
 
 IdentityContainer::const_iterator::const_iterator(std::set<Name>::const_iterator it,
                                                   shared_ptr<PibImpl> impl)
@@ -100,5 +101,6 @@ IdentityContainer::size() const
   return m_identities.size();
 }
 
+} // namespace pib
 } // namespace security
 } // namespace ndn

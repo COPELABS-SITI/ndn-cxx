@@ -19,17 +19,22 @@
  * See AUTHORS.md for complete list of ndn-cxx authors and contributors.
  */
 
-#include "security/pib.hpp"
-#include "security/pib-memory.hpp"
+#include "security/pib/pib.hpp"
+#include "security/pib/pib-memory.hpp"
 #include "pib-data-fixture.hpp"
 
 #include "boost-test.hpp"
 
 namespace ndn {
 namespace security {
+namespace pib {
 namespace tests {
 
-BOOST_AUTO_TEST_SUITE(SecurityPib)
+BOOST_AUTO_TEST_SUITE(Security)
+BOOST_AUTO_TEST_SUITE(Pib)
+BOOST_AUTO_TEST_SUITE(TestPib)
+
+using security::Pib;
 
 BOOST_FIXTURE_TEST_CASE(ValidityChecking, PibDataFixture)
 {
@@ -47,7 +52,7 @@ BOOST_FIXTURE_TEST_CASE(ValidityChecking, PibDataFixture)
     BOOST_CHECK(false);
 
   // key
-  Key key = id.addKey(id1Key1, id1Key1Name.get(-1));
+  Key key = id.addKey(id1Key1.buf(), id1Key1.size(), id1Key1Name);
 
   BOOST_CHECK_EQUAL(bool(key), true);
   BOOST_CHECK_EQUAL(!key, false);
@@ -78,8 +83,11 @@ BOOST_FIXTURE_TEST_CASE(TestIdentityOperation, PibDataFixture)
   BOOST_CHECK_THROW(pib.getDefaultIdentity(), Pib::Error);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE_END() // TestPib
+BOOST_AUTO_TEST_SUITE_END() // Pib
+BOOST_AUTO_TEST_SUITE_END() // Security
 
 } // namespace tests
+} // namespace pib
 } // namespace security
 } // namespace ndn

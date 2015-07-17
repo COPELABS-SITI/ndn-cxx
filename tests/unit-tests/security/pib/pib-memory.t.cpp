@@ -19,12 +19,13 @@
  * See AUTHORS.md for complete list of ndn-cxx authors and contributors.
  */
 
-#include "security/pib-memory.hpp"
+#include "security/pib/pib-memory.hpp"
 
 #include "boost-test.hpp"
 
 namespace ndn {
 namespace security {
+namespace pib {
 namespace tests {
 
 // most functionalities are tested in pib-impl.t.cpp
@@ -41,5 +42,6 @@ BOOST_AUTO_TEST_CASE(TpmLocatorManagement)
 BOOST_AUTO_TEST_SUITE_END()
 
 } // namespace tests
+} // namespace pib
 } // namespace security
 } // namespace ndn

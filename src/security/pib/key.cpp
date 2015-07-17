@@ -22,49 +22,56 @@
 #include "key.hpp"
 #include "pib-impl.hpp"
 #include "pib.hpp"
+#include "../transform/public-key.hpp"
 
 namespace ndn {
 namespace security {
+namespace pib {
+
+using tmp::Certificate;
 
 Key::Key()
-  : m_hasDefaultCertificate(false)
+  : m_keyType(KeyType::NONE)
+  , m_hasDefaultCertificate(false)
   , m_needRefreshCerts(false)
   , m_impl(nullptr)
 {
 }
 
-Key::Key(const Name& identityName, const name::Component& keyId,
-         const PublicKey& publicKey, shared_ptr<PibImpl> impl)
-  : m_id(identityName)
-  , m_keyId(keyId)
-  , m_key(publicKey)
+Key::Key(const Name& keyName, const uint8_t* key, size_t keyLen, shared_ptr<PibImpl> impl)
+  : m_keyName(keyName)
+  , m_key(key, keyLen)
   , m_hasDefaultCertificate(false)
   , m_needRefreshCerts(true)
   , m_impl(impl)
 {
   validityCheck();
 
-  m_keyName = m_id;
-  m_keyName.append(m_keyId);
+  std::tie(m_id, m_keyId) = parseKeyName(keyName);
 
   m_impl->addIdentity(m_id);
-  m_impl->addKey(m_id, m_keyId, publicKey);
+  m_impl->addKey(m_id, m_keyName, key, keyLen);
+
+  transform::PublicKey publicKey;
+  publicKey.loadPkcs8(key, keyLen);
+  m_keyType = publicKey.getKeyType();
 }
 
-Key::Key(const Name& identityName, const name::Component& keyId,
-         shared_ptr<PibImpl> impl)
-  : m_id(identityName)
-  , m_keyId(keyId)
+Key::Key(const Name& keyName, shared_ptr<PibImpl> impl)
+  : m_keyName(keyName)
   , m_hasDefaultCertificate(false)
   , m_needRefreshCerts(true)
   , m_impl(impl)
 {
   validityCheck();
 
-  m_keyName = m_id;
-  m_keyName.append(m_keyId);
+  std::tie(m_id, m_keyId) = parseKeyName(keyName);
 
-  m_key = m_impl->getKeyBits(m_id, m_keyId);
+  m_key = m_impl->getKeyBits(m_keyName);
+
+  transform::PublicKey key;
+  key.loadPkcs8(m_key.buf(), m_key.size());
+  m_keyType = key.getKeyType();
 }
 
 const Name&
@@ -91,7 +98,7 @@ Key::getKeyId() const
   return m_keyId;
 }
 
-const PublicKey&
+const Buffer&
 Key::getPublicKey() const
 {
   validityCheck();
@@ -100,9 +107,12 @@ Key::getPublicKey() const
 }
 
 void
-Key::addCertificate(const IdentityCertificate& certificate)
+Key::addCertificate(const Certificate& certificate)
 {
   validityCheck();
+
+  if (certificate.getKeyName() != m_keyName)
+    BOOST_THROW_EXCEPTION(Pib::Error("Certificate name does not match key name"));
 
   if (!m_needRefreshCerts &&
       m_certificates.find(certificate.getName()) == m_certificates.end()) {
@@ -126,7 +136,7 @@ Key::removeCertificate(const Name& certName)
   m_needRefreshCerts = true;
 }
 
-IdentityCertificate
+Certificate
 Key::getCertificate(const Name& certName) const
 {
   validityCheck();
@@ -140,39 +150,38 @@ Key::getCertificates() const
   validityCheck();
 
   if (m_needRefreshCerts) {
-    m_certificates = std::move(CertificateContainer(m_impl->getCertificatesOfKey(m_id, m_keyId),
-                                                    m_impl));
+    m_certificates = std::move(CertificateContainer(m_impl->getCertificatesOfKey(m_keyName), m_impl));
     m_needRefreshCerts = false;
   }
 
   return m_certificates;
 }
 
-const IdentityCertificate&
+const Certificate&
 Key::setDefaultCertificate(const Name& certName)
 {
   validityCheck();
 
   m_defaultCertificate = m_impl->getCertificate(certName);
-  m_impl->setDefaultCertificateOfKey(m_id, m_keyId, certName);
+  m_impl->setDefaultCertificateOfKey(m_keyName, certName);
   m_hasDefaultCertificate = true;
   return m_defaultCertificate;
 }
 
-const IdentityCertificate&
-Key::setDefaultCertificate(const IdentityCertificate& certificate)
+const Certificate&
+Key::setDefaultCertificate(const Certificate& certificate)
 {
   addCertificate(certificate);
   return setDefaultCertificate(certificate.getName());
 }
 
-const IdentityCertificate&
+const Certificate&
 Key::getDefaultCertificate() const
 {
   validityCheck();
 
   if (!m_hasDefaultCertificate) {
-    m_defaultCertificate = m_impl->getDefaultCertificateOfKey(m_id, m_keyId);
+    m_defaultCertificate = m_impl->getDefaultCertificateOfKey(m_keyName);
     m_hasDefaultCertificate = true;
   }
 
@@ -197,5 +206,6 @@ Key::validityCheck() const
     BOOST_THROW_EXCEPTION(std::domain_error("Invalid Key instance"));
 }
 
+} // namespace pib
 } // namespace security
 } // namespace ndn

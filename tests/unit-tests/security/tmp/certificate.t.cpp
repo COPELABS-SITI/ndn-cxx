@@ -107,6 +107,7 @@ BOOST_AUTO_TEST_CASE(Construction)
   BOOST_CHECK_EQUAL(certificate1.getName(), Name("/ndn/site1/ksk-1416425377094/KEY/%FD%00%00%01I%C9%8B"));
   BOOST_CHECK_EQUAL(certificate1.getKeyName(), Name("/ndn/site1/ksk-1416425377094/KEY"));
   BOOST_CHECK_EQUAL(certificate1.getIdentity(), Name("/ndn/site1"));
+  BOOST_CHECK_EQUAL(certificate1.getKeyId(), name::Component("ksk-1416425377094"));
   BOOST_CHECK_EQUAL(certificate1.getIssuerName(), Name("/ndn/site1/ksk-2516425377094/KEY"));
 
   Certificate certificate2(std::move(Data(block)));
@@ -114,6 +115,7 @@ BOOST_AUTO_TEST_CASE(Construction)
   BOOST_CHECK_EQUAL(certificate2.getName(), Name("/ndn/site1/ksk-1416425377094/KEY/%FD%00%00%01I%C9%8B"));
   BOOST_CHECK_EQUAL(certificate2.getKeyName(), Name("/ndn/site1/ksk-1416425377094/KEY"));
   BOOST_CHECK_EQUAL(certificate2.getIdentity(), Name("/ndn/site1"));
+  BOOST_CHECK_EQUAL(certificate2.getKeyId(), name::Component("ksk-1416425377094"));
   BOOST_CHECK_EQUAL(certificate2.getIssuerName(), Name("/ndn/site1/ksk-2516425377094/KEY"));
 }
 
@@ -146,6 +148,7 @@ BOOST_AUTO_TEST_CASE(GetterSetter)
   BOOST_CHECK_EQUAL(certificate.getName(), Name("/ndn/site1/ksk-1416425377094/KEY/%FD%00%00%01I%C9%8B"));
   BOOST_CHECK_EQUAL(certificate.getKeyName(), Name("/ndn/site1/ksk-1416425377094/KEY"));
   BOOST_CHECK_EQUAL(certificate.getIdentity(), Name("/ndn/site1"));
+  BOOST_CHECK_EQUAL(certificate.getKeyId(), name::Component("ksk-1416425377094"));
   BOOST_CHECK_EQUAL(certificate.getIssuerName(), Name("/ndn/site1/ksk-2516425377094/KEY"));
 }
 

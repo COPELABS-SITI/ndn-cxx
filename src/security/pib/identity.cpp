@@ -22,11 +22,23 @@
 #include "identity.hpp"
 #include "pib-impl.hpp"
 #include "pib.hpp"
+#include "../transform.hpp"
+#include "../../encoding/buffer-stream.hpp"
 
 namespace ndn {
 namespace security {
+namespace pib {
 
-const name::Component Identity::EMPTY_KEY_ID;
+static void
+keyNameCheck(const Name& identity, const Name& keyName)
+{
+  Name id;
+  name::Component keyId;
+  std::tie(id, keyId) = parseKeyName(keyName);
+
+  if (id != identity)
+    BOOST_THROW_EXCEPTION(Pib::Error("Identity name does not match key name"));
+}
 
 Identity::Identity()
   : m_hasDefaultKey(false)
@@ -58,43 +70,43 @@ Identity::getName() const
 }
 
 Key
-Identity::addKey(const PublicKey& publicKey, const name::Component& keyId)
+Identity::addKey(const uint8_t* key, size_t keyLen, const Name& keyName)
 {
   validityCheck();
 
-  name::Component actualKeyId = keyId;
-  if (actualKeyId == EMPTY_KEY_ID) {
-    const Block& digest = publicKey.computeDigest();
-    actualKeyId = name::Component(digest.wire(), digest.size());
-  }
+  keyNameCheck(m_name, keyName);
 
-  if (!m_needRefreshKeys && m_keys.find(actualKeyId) == m_keys.end()) {
+  if (!m_needRefreshKeys && m_keys.find(keyName) == m_keys.end()) {
     // if we have already loaded all the keys, but the new key is not one of them
     // the KeyContainer should be refreshed
     m_needRefreshKeys = true;
   }
 
-  return Key(m_name, actualKeyId, publicKey, m_impl);
+  return Key(keyName, key, keyLen, m_impl);
 }
 
 void
-Identity::removeKey(const name::Component& keyId)
+Identity::removeKey(const Name& keyName)
 {
   validityCheck();
 
-  if (m_hasDefaultKey && m_defaultKey.getKeyId() == keyId)
+  keyNameCheck(m_name, keyName);
+
+  if (m_hasDefaultKey && m_defaultKey.getName() == keyName)
     m_hasDefaultKey = false;
 
-  m_impl->removeKey(m_name, keyId);
+  m_impl->removeKey(keyName);
   m_needRefreshKeys = true;
 }
 
 Key
-Identity::getKey(const name::Component& keyId) const
+Identity::getKey(const Name& keyName) const
 {
   validityCheck();
 
-  return Key(m_name, keyId, m_impl);
+  keyNameCheck(m_name, keyName);
+
+  return Key(keyName, m_impl);
 }
 
 const KeyContainer&
@@ -111,22 +123,28 @@ Identity::getKeys() const
 }
 
 Key&
-Identity::setDefaultKey(const name::Component& keyId)
+Identity::setDefaultKey(const Name& keyName)
 {
   validityCheck();
 
-  m_defaultKey = std::move(Key(m_name, keyId, m_impl));
+  keyNameCheck(m_name, keyName);
+
+  m_defaultKey = std::move(Key(keyName, m_impl));
   m_hasDefaultKey = true;
 
-  m_impl->setDefaultKeyOfIdentity(m_name, keyId);
+  m_impl->setDefaultKeyOfIdentity(m_name, keyName);
   return m_defaultKey;
 }
 
 Key&
-Identity::setDefaultKey(const PublicKey& publicKey, const name::Component& keyId)
+Identity::setDefaultKey(const uint8_t* key, size_t keyLen, const Name& keyName)
 {
-  const Key& keyEntry = addKey(publicKey, keyId);
-  return setDefaultKey(keyEntry.getKeyId());
+  validityCheck();
+
+  keyNameCheck(m_name, keyName);
+
+  addKey(key, keyLen, keyName);
+  return setDefaultKey(keyName);
 }
 
 Key&
@@ -135,7 +153,7 @@ Identity::getDefaultKey() const
   validityCheck();
 
   if (!m_hasDefaultKey) {
-    m_defaultKey = std::move(Key(m_name, m_impl->getDefaultKeyOfIdentity(m_name), m_impl));
+    m_defaultKey = std::move(Key(m_impl->getDefaultKeyOfIdentity(m_name), m_impl));
     m_hasDefaultKey = true;
   }
 
@@ -160,5 +178,6 @@ Identity::validityCheck() const
     BOOST_THROW_EXCEPTION(std::domain_error("Invalid Identity instance"));
 }
 
+} // namespace pib
 } // namespace security
 } // namespace ndn

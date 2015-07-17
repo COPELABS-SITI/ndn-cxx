@@ -26,6 +26,7 @@
 
 namespace ndn {
 namespace security {
+namespace pib {
 
 /**
  * @brief An in-memory implementation of Pib
@@ -80,24 +81,25 @@ public: // Identity management
 public: // Key management
 
   virtual bool
-  hasKey(const Name& identity, const name::Component& keyId) const NDN_CXX_DECL_OVERRIDE;
+  hasKey(const Name& keyName) const NDN_CXX_DECL_OVERRIDE;
 
   virtual void
-  addKey(const Name& identity, const name::Component& keyId, const PublicKey& publicKey) NDN_CXX_DECL_OVERRIDE;
+  addKey(const Name& identity, const Name& keyName,
+         const uint8_t* key, size_t keyLen) NDN_CXX_DECL_OVERRIDE;
 
   virtual void
-  removeKey(const Name& identity, const name::Component& keyId) NDN_CXX_DECL_OVERRIDE;
+  removeKey(const Name& keyName) NDN_CXX_DECL_OVERRIDE;
 
-  virtual PublicKey
-  getKeyBits(const Name& identity, const name::Component& keyId) const NDN_CXX_DECL_OVERRIDE;
+  virtual Buffer
+  getKeyBits(const Name& keyName) const NDN_CXX_DECL_OVERRIDE;
 
-  virtual std::set<name::Component>
+  virtual std::set<Name>
   getKeysOfIdentity(const Name& identity) const NDN_CXX_DECL_OVERRIDE;
 
   virtual void
-  setDefaultKeyOfIdentity(const Name& identity, const name::Component& keyId) NDN_CXX_DECL_OVERRIDE;
+  setDefaultKeyOfIdentity(const Name& identity, const Name& keyName) NDN_CXX_DECL_OVERRIDE;
 
-  virtual name::Component
+  virtual Name
   getDefaultKeyOfIdentity(const Name& identity) const NDN_CXX_DECL_OVERRIDE;
 
 public: // Certificate management
@@ -106,27 +108,22 @@ public: // Certificate management
   hasCertificate(const Name& certName) const NDN_CXX_DECL_OVERRIDE;
 
   virtual void
-  addCertificate(const IdentityCertificate& certificate) NDN_CXX_DECL_OVERRIDE;
+  addCertificate(const tmp::Certificate& certificate) NDN_CXX_DECL_OVERRIDE;
 
   virtual void
   removeCertificate(const Name& certName) NDN_CXX_DECL_OVERRIDE;
 
-  virtual IdentityCertificate
+  virtual tmp::Certificate
   getCertificate(const Name& certName) const NDN_CXX_DECL_OVERRIDE;
 
   virtual std::set<Name>
-  getCertificatesOfKey(const Name& identity, const name::Component& keyId) const NDN_CXX_DECL_OVERRIDE;
+  getCertificatesOfKey(const Name& keyName) const NDN_CXX_DECL_OVERRIDE;
 
   virtual void
-  setDefaultCertificateOfKey(const Name& identity, const name::Component& keyId, const Name& certName) NDN_CXX_DECL_OVERRIDE;
+  setDefaultCertificateOfKey(const Name& keyName, const Name& certName) NDN_CXX_DECL_OVERRIDE;
 
-  virtual IdentityCertificate
-  getDefaultCertificateOfKey(const Name& identity, const name::Component& keyId) const NDN_CXX_DECL_OVERRIDE;
-
-private: // Key management
-
-  Name
-  getKeyName(const Name& identity, const name::Component& keyId) const;
+  virtual tmp::Certificate
+  getDefaultCertificateOfKey(const Name& keyName) const NDN_CXX_DECL_OVERRIDE;
 
 private:
 
@@ -135,18 +132,19 @@ private:
   Name m_defaultIdentity;
 
   /// @brief keyName => keyBits
-  std::map<Name, PublicKey> m_keys;
+  std::map<Name, Buffer> m_keys;
 
   /// @brief identity => default key Name
   std::map<Name, Name> m_defaultKey;
 
   /// @brief certificate Name => certificate
-  std::map<Name, IdentityCertificate> m_certs;
+  std::map<Name, tmp::Certificate> m_certs;
 
   /// @brief keyName => default certificate Name
   std::map<Name, Name> m_defaultCert;
 };
 
+} // namespace pib
 } // namespace security
 } // namespace ndn
 

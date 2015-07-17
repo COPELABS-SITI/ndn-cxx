@@ -19,28 +19,29 @@
  * See AUTHORS.md for complete list of ndn-cxx authors and contributors.
  */
 
-#ifndef NDN_SECURITY_IDENTITY_CONTAINER_HPP
-#define NDN_SECURITY_IDENTITY_CONTAINER_HPP
+#ifndef NDN_SECURITY_PIB_CERTIFICATE_CONTAINER_HPP
+#define NDN_SECURITY_PIB_CERTIFICATE_CONTAINER_HPP
 
 #include <set>
-#include "identity.hpp"
+#include "../tmp/certificate.hpp"
 
 namespace ndn {
 namespace security {
+namespace pib {
 
 class PibImpl;
 
-/// @brief A handler to search or enumerate identities in PIB.
-class IdentityContainer
+/// @brief A handler to search or enumerate certificates of a key.
+class CertificateContainer
 {
 public:
   class const_iterator
   {
   public:
-    friend class IdentityContainer;
+    friend class CertificateContainer;
 
   public:
-    Identity
+    tmp::Certificate
     operator*();
 
     const_iterator&
@@ -59,7 +60,6 @@ public:
     const_iterator(std::set<Name>::const_iterator it, shared_ptr<PibImpl> impl);
 
   private:
-    Name m_identity;
     std::set<Name>::const_iterator m_it;
     shared_ptr<PibImpl> m_impl;
   };
@@ -67,9 +67,9 @@ public:
   typedef const_iterator iterator;
 
 public:
-  IdentityContainer();
+  CertificateContainer();
 
-  IdentityContainer(std::set<Name>&& identities, shared_ptr<PibImpl> impl);
+  CertificateContainer(std::set<Name>&& certNames, shared_ptr<PibImpl> impl);
 
   const_iterator
   begin() const;
@@ -78,17 +78,21 @@ public:
   end() const;
 
   const_iterator
-  find(const Name& keyId) const;
+  find(const Name& certName) const;
 
   size_t
   size() const;
 
 private:
-  std::set<Name> m_identities;
+  std::set<Name> m_certNames;
   shared_ptr<PibImpl> m_impl;
 };
+
+} // namespace pib
+
+using pib::CertificateContainer;
 
 } // namespace security
 } // namespace ndn
 
-#endif // NDN_SECURITY_IDENTITY_CONTAINER_HPP
+#endif // NDN_SECURITY_PIB_CERTIFICATE_CONTAINER_HPP

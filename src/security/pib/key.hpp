@@ -19,14 +19,19 @@
  * See AUTHORS.md for complete list of ndn-cxx authors and contributors.
  */
 
-#ifndef NDN_SECURITY_KEY_HPP
-#define NDN_SECURITY_KEY_HPP
+#ifndef NDN_SECURITY_PIB_KEY_HPP
+#define NDN_SECURITY_PIB_KEY_HPP
 
-#include "identity-certificate.hpp"
+#include "../../data.hpp"
 #include "certificate-container.hpp"
+#include "../security-common.hpp"
 
 namespace ndn {
 namespace security {
+
+class KeyChain;
+
+namespace pib {
 
 class PibImpl;
 class Identity;
@@ -47,7 +52,7 @@ class Key
 public:
   friend class Identity;
   friend class KeyContainer;
-  friend class KeyChain;
+  friend class security::KeyChain;
 
 public:
   /**
@@ -82,8 +87,15 @@ public:
   const name::Component&
   getKeyId() const;
 
+  /// @brief Get key type
+  KeyType
+  getKeyType() const
+  {
+    return m_keyType;
+  }
+
   /// @brief Get public key
-  const PublicKey&
+  const Buffer&
   getPublicKey() const;
 
   /**
@@ -92,7 +104,7 @@ public:
    * @return the certificate
    * @throws Pib::Error if the certificate does not exist.
    */
-  IdentityCertificate
+  tmp::Certificate
   getCertificate(const Name& certName) const;
 
   /// @brief Get all the certificates for this key.
@@ -104,7 +116,7 @@ public:
    *
    * @throws Pib::Error if the default certificate does not exist.
    */
-  const IdentityCertificate&
+  const tmp::Certificate&
   getDefaultCertificate() const;
 
   /// @brief Check if the Key instance is valid
@@ -122,7 +134,7 @@ NDN_CXX_PUBLIC_WITH_TESTS_ELSE_PRIVATE: // write operations should be private
    * @param certificate The certificate to add.
    */
   void
-  addCertificate(const IdentityCertificate& certificate);
+  addCertificate(const tmp::Certificate& certificate);
 
   /**
    * @brief Remove a certificate.
@@ -139,7 +151,7 @@ NDN_CXX_PUBLIC_WITH_TESTS_ELSE_PRIVATE: // write operations should be private
    * @return the default certificate
    * @throws Pib::Error if the certificate does not exist.
    */
-  const IdentityCertificate&
+  const tmp::Certificate&
   setDefaultCertificate(const Name& certName);
 
   /**
@@ -151,32 +163,28 @@ NDN_CXX_PUBLIC_WITH_TESTS_ELSE_PRIVATE: // write operations should be private
    * @param certificate The certificate to add.
    * @return the default certificate
    */
-  const IdentityCertificate&
-  setDefaultCertificate(const IdentityCertificate& certificate);
+  const tmp::Certificate&
+  setDefaultCertificate(const tmp::Certificate& certificate);
 
 NDN_CXX_PUBLIC_WITH_TESTS_ELSE_PRIVATE:
   /**
-   * @brief Create a Key with @p identityName and @p keyId.
+   * @brief Create a Key with @p keyName.
    *
    * If the key/identity does not exist in the backend, create it in backend.
    *
-   * @param identityName The name of the Identity.
-   * @param keyId The key id of the key.
-   * @param publicKey The public key to add.
+   * @param key The public key to add.
+   * @param keLen The length of the key.
    * @param impl The actual backend implementation.
    */
-  Key(const Name& identityName, const name::Component& keyId,
-      const PublicKey& publicKey, shared_ptr<PibImpl> impl);
+  Key(const Name& keyName, const uint8_t* key, size_t keyLen, shared_ptr<PibImpl> impl);
 
   /**
-   * @brief Create an KeyEntry with @p identityName and @p keyId.
+   * @brief Create a Key with @p keyName.
    *
-   * @param identityName The name of the Identity.
-   * @param keyId The key id of the key.
    * @param impl The actual backend implementation.
    * @throws Pib::Error if the key does not exist.
    */
-  Key(const Name& identityName, const name::Component& keyId, shared_ptr<PibImpl> impl);
+  Key(const Name& keyName, shared_ptr<PibImpl> impl);
 
   /**
    * @brief Check the validity of this instance
@@ -190,10 +198,11 @@ private:
   Name m_id;
   name::Component m_keyId;
   Name m_keyName;
-  PublicKey m_key;
+  Buffer m_key;
+  KeyType m_keyType;
 
   mutable bool m_hasDefaultCertificate;
-  mutable IdentityCertificate m_defaultCertificate;
+  mutable tmp::Certificate m_defaultCertificate;
 
   mutable bool m_needRefreshCerts;
   mutable CertificateContainer m_certificates;
@@ -201,7 +210,11 @@ private:
   shared_ptr<PibImpl> m_impl;
 };
 
+} // namespace pib
+
+using pib::Key;
+
 } // namespace security
 } // namespace ndn
 
-#endif // NDN_SECURITY_PIB_HPP
+#endif // NDN_SECURITY_PIB_KEY_HPP

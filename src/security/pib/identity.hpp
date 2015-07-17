@@ -19,16 +19,20 @@
  * See AUTHORS.md for complete list of ndn-cxx authors and contributors.
  */
 
-#ifndef NDN_SECURITY_IDENTITY_HPP
-#define NDN_SECURITY_IDENTITY_HPP
+#ifndef NDN_SECURITY_PIB_IDENTITY_HPP
+#define NDN_SECURITY_PIB_IDENTITY_HPP
 
 #include "key-container.hpp"
 
 namespace ndn {
 namespace security {
 
-class PibImpl;
+class KeyChain;
+
+namespace pib {
+
 class Pib;
+class PibImpl;
 class IdentityContainer;
 
 /**
@@ -46,7 +50,7 @@ class Identity
 public:
   friend class Pib;
   friend class IdentityContainer;
-  friend class KeyChain;
+  friend class security::KeyChain;
 
 public:
   /**
@@ -80,7 +84,7 @@ public:
    * @throw Pib::Error if the key does not exist.
    */
   Key
-  getKey(const name::Component& keyId) const;
+  getKey(const Name& keyName) const;
 
   /// @brief Get all the keys for this Identity.
   const KeyContainer&
@@ -104,50 +108,44 @@ public:
 NDN_CXX_PUBLIC_WITH_TESTS_ELSE_PRIVATE: // write operations should be private
 
   /**
-   * @brief Add a key.
+   * @brief Add a @p key with @p keyName (in PKCS#8 format).
    *
    * If the key already exists, do nothing.
    *
    * If no default key is set before, the new key will be set as the default key of the identity.
    *
-   * @param publicKey The public key to add.
-   * @param keyId The key id component of the new key to add.
-   *              By default, the keyId will be set to the hash of the public key bits.
    * @return the added key or existing key with the same key id.
    */
   Key
-  addKey(const PublicKey& publicKey, const name::Component& keyId = EMPTY_KEY_ID);
+  addKey(const uint8_t* key, size_t keyLen, const Name& keyName);
 
   /**
-   * @brief Remove a key.
-   *
-   * @param keyId The key id component of the key to delete.
+   * @brief Remove a key with @p keyName
    */
   void
-  removeKey(const name::Component& keyId);
+  removeKey(const Name& keyName);
 
   /**
-   * @brief Set the key with id @p keyId as the default key.
+   * @brief Set the key with id @p keyName.
    *
-   * @param keyId The key id component of the default key.
    * @return The default key
    * @throws Pib::Error if the key does not exist.
    */
   Key&
-  setDefaultKey(const name::Component& keyId);
+  setDefaultKey(const Name& keyName);
 
   /**
-   * @brief Set the default key.
+   * @brief Set the default key with @p keyName (in PKCS#8 format).
    *
    * If the key does not exist, add the key and set it as the default of the Identity.
    * If the key exists, simply set it as the default key of the Identity.
    *
-   * @param publicKey The public key to add.
-   * @param keyId The key id component of the default key.
+   * @param key The public key to add.
+   * @param keyLen The length of the key.
    * @return the default key
    */
   Key&
-  setDefaultKey(const PublicKey& publicKey, const name::Component& keyId = EMPTY_KEY_ID);
+  setDefaultKey(const uint8_t* key, size_t keyLen, const Name& keyName);
 
 NDN_CXX_PUBLIC_WITH_TESTS_ELSE_PRIVATE:
   /**
@@ -168,14 +166,6 @@ NDN_CXX_PUBLIC_WITH_TESTS_ELSE_PRIVATE:
   void
   validityCheck() const;
 
-public:
-  /**
-   * @brief The default value of keyId when add a new key.
-   *
-   * An empty keyId implies that the key digest should be used as the actual keyId.
-   */
-  static const name::Component EMPTY_KEY_ID;
-
 private:
   Name m_name;
 
@@ -188,7 +178,11 @@ private:
   shared_ptr<PibImpl> m_impl;
 };
 
+} // namespace pib
+
+using pib::Identity;
+
 } // namespace security
 } // namespace ndn
 
-#endif // NDN_SECURITY_IDENTITY_HPP
+#endif // NDN_SECURITY_PIB_IDENTITY_HPP

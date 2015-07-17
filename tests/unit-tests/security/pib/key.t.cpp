@@ -19,9 +19,9 @@
  * See AUTHORS.md for complete list of ndn-cxx authors and contributors.
  */
 
-#include "security/key.hpp"
-#include "security/pib.hpp"
-#include "security/pib-memory.hpp"
+#include "security/pib/key.hpp"
+#include "security/pib/pib.hpp"
+#include "security/pib/pib-memory.hpp"
 #include "pib-data-fixture.hpp"
 
 #include "boost-test.hpp"
@@ -29,6 +29,8 @@
 namespace ndn {
 namespace security {
 namespace tests {
+
+using tmp::Certificate;
 
 BOOST_AUTO_TEST_SUITE(SecurityKey)
 
@@ -45,8 +47,8 @@ BOOST_FIXTURE_TEST_CASE(ValidityChecking, PibDataFixture)
   else
     BOOST_CHECK(true);
 
-  auto pibImpl = make_shared<PibMemory>();
-  key = Key(id1, id1Key1Name.get(-1), id1Key1, pibImpl);
+  auto pibImpl = make_shared<pib::PibMemory>();
+  key = Key(id1Key1Name, id1Key1.buf(), id1Key1.size(), pibImpl);
 
   BOOST_CHECK_EQUAL(static_cast<bool>(key), true);
   BOOST_CHECK_EQUAL(!key, false);
@@ -59,9 +61,9 @@ BOOST_FIXTURE_TEST_CASE(ValidityChecking, PibDataFixture)
 
 BOOST_FIXTURE_TEST_CASE(TestCertificateOperation, PibDataFixture)
 {
-  auto pibImpl = make_shared<PibMemory>();
+  auto pibImpl = make_shared<pib::PibMemory>();
 
-  Key key11(id1, id1Key1Name.get(-1), id1Key1, pibImpl);
+  Key key11(id1Key1Name, id1Key1.buf(), id1Key1.size(), pibImpl);
 
   BOOST_CHECK_THROW(key11.getCertificate(id1Key1Cert1.getName()), Pib::Error);
   key11.addCertificate(id1Key1Cert1);
@@ -74,7 +76,7 @@ BOOST_FIXTURE_TEST_CASE(TestCertificateOperation, PibDataFixture)
   BOOST_REQUIRE_NO_THROW(key11.setDefaultCertificate(id1Key1Cert1));
   BOOST_REQUIRE_NO_THROW(key11.getDefaultCertificate());
 
-  const IdentityCertificate& defaultCert = key11.getDefaultCertificate();
+  const Certificate& defaultCert = key11.getDefaultCertificate();
   BOOST_CHECK_EQUAL_COLLECTIONS(defaultCert.wireEncode().wire(),
                                 defaultCert.wireEncode().wire() + defaultCert.wireEncode().size(),
                                 id1Key1Cert1.wireEncode().wire(),

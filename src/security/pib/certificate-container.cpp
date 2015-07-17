@@ -24,6 +24,9 @@
 
 namespace ndn {
 namespace security {
+namespace pib {
+
+using tmp::Certificate;
 
 CertificateContainer::const_iterator::const_iterator(std::set<Name>::const_iterator it,
                                                      shared_ptr<PibImpl> impl)
@@ -32,7 +35,7 @@ CertificateContainer::const_iterator::const_iterator(std::set<Name>::const_itera
 {
 }
 
-IdentityCertificate
+Certificate
 CertificateContainer::const_iterator::operator*()
 {
   return m_impl->getCertificate(*m_it);
@@ -100,5 +103,6 @@ CertificateContainer::size() const
   return m_certNames.size();
 }
 
+} // namespace pib
 } // namespace security
 } // namespace ndn
