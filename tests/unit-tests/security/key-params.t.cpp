@@ -27,21 +27,29 @@
 namespace ndn {
 namespace tests {
 
-BOOST_AUTO_TEST_SUITE(SecurityKeyParams)
+BOOST_AUTO_TEST_SUITE(Security)
+BOOST_AUTO_TEST_SUITE(TestKeyParams)
 
 BOOST_AUTO_TEST_CASE(RsaParameter)
 {
   RsaKeyParams params;
   BOOST_CHECK_EQUAL(params.getKeyType(), KeyType::RSA);
   BOOST_CHECK_EQUAL(params.getKeySize(), 2048);
+  BOOST_CHECK(params.getKeyIdType() == KeyIdType::RANDOM);
 
-  RsaKeyParams params2(1024);
+  RsaKeyParams params2(1024, KeyIdType::SHA256);
   BOOST_CHECK_EQUAL(params2.getKeyType(), KeyType::RSA);
   BOOST_CHECK_EQUAL(params2.getKeySize(), 1024);
+  BOOST_CHECK(params2.getKeyIdType() == KeyIdType::SHA256);
 
-  RsaKeyParams params3(3);
-  BOOST_CHECK_EQUAL(params3.getKeyType(), KeyType::RSA);
-  BOOST_CHECK_EQUAL(params3.getKeySize(), 2048);
+  BOOST_CHECK_THROW(RsaKeyParams(3), KeyParams::Error);
+
+  name::Component keyId("keyId");
+  RsaKeyParams params4(keyId);
+  BOOST_CHECK(params4.getKeyType() == KeyType::RSA);
+  BOOST_CHECK_EQUAL(params4.getKeySize(), 2048);
+  BOOST_CHECK(params4.getKeyIdType() == KeyIdType::USER_SPECIFIED);
+  BOOST_CHECK_EQUAL(params4.getKeyId(), keyId);
 }
 
 BOOST_AUTO_TEST_CASE(EcdsaParameter)
@@ -49,45 +57,52 @@ BOOST_AUTO_TEST_CASE(EcdsaParameter)
   EcdsaKeyParams params;
   BOOST_CHECK_EQUAL(params.getKeyType(), KeyType::EC);
   BOOST_CHECK_EQUAL(params.getKeySize(), 256);
+  BOOST_CHECK(params.getKeyIdType() == KeyIdType::RANDOM);
 
-  EcdsaKeyParams params2(384);
+  EcdsaKeyParams params2(384, KeyIdType::SHA256);
   BOOST_CHECK_EQUAL(params2.getKeyType(), KeyType::EC);
   BOOST_CHECK_EQUAL(params2.getKeySize(), 384);
+  BOOST_CHECK(params2.getKeyIdType() == KeyIdType::SHA256);
 
-  EcdsaKeyParams params3(3);
-  BOOST_CHECK_EQUAL(params3.getKeyType(), KeyType::EC);
-  BOOST_CHECK_EQUAL(params3.getKeySize(), 256);
+  BOOST_CHECK_THROW(EcdsaKeyParams(3), KeyParams::Error);
+
+  name::Component keyId("keyId");
+  EcdsaKeyParams params4(keyId);
+  BOOST_CHECK(params4.getKeyType() == KeyType::EC);
+  BOOST_CHECK_EQUAL(params4.getKeySize(), 256);
+  BOOST_CHECK(params4.getKeyIdType() == KeyIdType::USER_SPECIFIED);
+  BOOST_CHECK_EQUAL(params4.getKeyId(), keyId);
 }
 
 BOOST_AUTO_TEST_CASE(AesParameter)
 {
-  AesKeyParams params;
+  name::Component keyId("keyId");
+  AesKeyParams params(keyId);
   BOOST_CHECK_EQUAL(params.getKeyType(), KeyType::AES);
-  BOOST_CHECK_EQUAL(params.getKeySize(), 64);
+  BOOST_CHECK_EQUAL(params.getKeySize(), 128);
+  BOOST_CHECK_EQUAL(params.getKeyIdType(), KeyIdType::USER_SPECIFIED);
 
-  AesKeyParams params2(128);
-  BOOST_CHECK_EQUAL(params2.getKeyType(), KeyType::AES);
-  BOOST_CHECK_EQUAL(params2.getKeySize(), 128);
+  AesKeyParams params2(keyId, 192);
+  BOOST_CHECK(params2.getKeyType() == KeyType::AES);
+  BOOST_CHECK_EQUAL(params2.getKeySize(), 192);
+  BOOST_CHECK(params.getKeyIdType() == KeyIdType::USER_SPECIFIED);
 
-  AesKeyParams params3(256);
+  AesKeyParams params3(keyId, 256);
   BOOST_CHECK_EQUAL(params3.getKeyType(), KeyType::AES);
   BOOST_CHECK_EQUAL(params3.getKeySize(), 256);
+  BOOST_CHECK(params.getKeyIdType() == KeyIdType::USER_SPECIFIED);
 
-  AesKeyParams params4(4);
-  BOOST_CHECK_EQUAL(params4.getKeyType(), KeyType::AES);
-  BOOST_CHECK_EQUAL(params4.getKeySize(), 64);
+  BOOST_CHECK_THROW(AesKeyParams(keyId, 4), KeyParams::Error);
+
+  AesKeyParams params5(keyId);
+  BOOST_CHECK_EQUAL(params5.getKeyType(), KeyType::AES);
+  BOOST_CHECK_EQUAL(params5.getKeySize(), 128);
+  BOOST_CHECK_EQUAL(params5.getKeyIdType(), KeyIdType::USER_SPECIFIED);
+  BOOST_CHECK_EQUAL(params5.getKeyId(), keyId);
 }
 
-BOOST_AUTO_TEST_CASE(Error)
-{
-  EcdsaKeyParams params;
-  BOOST_REQUIRE_THROW((RsaKeyParams(params)), KeyParams::Error);
-
-  AesKeyParams params2;
-  BOOST_REQUIRE_THROW((RsaKeyParams(params2)), KeyParams::Error);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE_END() // TestKeyParams
+BOOST_AUTO_TEST_SUITE_END() // Security
 
 } // namespace tests
 } // namespace ndn

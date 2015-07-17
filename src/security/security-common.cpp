@@ -25,6 +25,26 @@
 namespace ndn {
 
 std::ostream&
+operator<<(std::ostream& os, KeyIdType keyIdType)
+{
+  switch (keyIdType) {
+  case KeyIdType::USER_SPECIFIED:
+    os << "USER_SPECIFIED";
+    break;
+  case KeyIdType::SHA256:
+    os << "SHA256";
+    break;
+  case KeyIdType::RANDOM:
+    os << "RANDOM";
+    break;
+  default:
+    os << static_cast<int>(keyIdType);
+    break;
+  };
+  return os;
+}
+
+std::ostream&
 operator<<(std::ostream& os, KeyType keyType)
 {
   switch (keyType) {
