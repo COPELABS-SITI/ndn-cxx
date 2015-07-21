@@ -34,6 +34,11 @@ enum {
   CertificatePackage = 130
 };
 
+enum {
+  SafeBag = 128,
+  EncryptedKeyBag = 129
+};
+
 } // namespace security
 } // namespace tlv
 } // namespace ndn
