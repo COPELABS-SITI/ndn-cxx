@@ -50,7 +50,7 @@ development tools and libraries, and ndn-cxx prerequisites.
    If using MacPorts, dependencies can be installed using the following
    commands::
 
-       sudo port install pkgconfig boost sqlite3 libcryptopp
+       sudo port install pkgconfig boost sqlite3 libcryptopp openssl
 
    .. note::
 

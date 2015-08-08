@@ -99,7 +99,7 @@ main(int, char**)
 
     conf.check_sqlite3(mandatory=True)
     conf.check_cryptopp(mandatory=True, use='PTHREAD')
-    conf.check_openssl(mandatory=True)
+    conf.check_openssl(mandatory=True, atleast_version=0x10000000)
 
     USED_BOOST_LIBS = ['system', 'filesystem', 'date_time', 'iostreams',
                        'regex', 'program_options', 'chrono', 'random']
