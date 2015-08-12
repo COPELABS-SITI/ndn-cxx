@@ -194,7 +194,7 @@ public:
    * @brief Check if a particular key exists.
    *
    * @param keyName The name of the key.
-   * @param keyClass The class of the key, e.g. KEY_CLASS_PUBLIC, KEY_CLASS_PRIVATE.
+   * @param keyClass The class of the key, e.g. KeyClass::PUBLIC, KeyClass::PRIVATE.
    * @return True if the key exists, otherwise false.
    */
   virtual bool

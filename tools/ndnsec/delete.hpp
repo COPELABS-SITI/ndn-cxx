@@ -96,7 +96,7 @@ ndnsec_delete(int argc, char** argv)
     }
     else if (isDeleteKey) {
       if (!keyChain.doesPublicKeyExist(name) &&
-          !keyChain.doesKeyExistInTpm(name, KEY_CLASS_PRIVATE)) {
+          !keyChain.doesKeyExistInTpm(name, KeyClass::PRIVATE)) {
         std::cerr << "ERROR: Key does not exist: " << name << std::endl;
         return 1;
       }

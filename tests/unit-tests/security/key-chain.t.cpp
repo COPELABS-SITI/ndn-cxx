@@ -163,8 +163,8 @@ BOOST_AUTO_TEST_CASE(ExportIdentity)
 
   BOOST_CHECK_EQUAL(keyChain.doesIdentityExist(identity), false);
   BOOST_CHECK_EQUAL(keyChain.doesPublicKeyExist(keyName), false);
-  BOOST_CHECK_EQUAL(keyChain.doesKeyExistInTpm(keyName, KEY_CLASS_PRIVATE), false);
-  BOOST_CHECK_EQUAL(keyChain.doesKeyExistInTpm(keyName, KEY_CLASS_PUBLIC), false);
+  BOOST_CHECK_EQUAL(keyChain.doesKeyExistInTpm(keyName, KeyClass::PRIVATE), false);
+  BOOST_CHECK_EQUAL(keyChain.doesKeyExistInTpm(keyName, KeyClass::PUBLIC), false);
   BOOST_CHECK_EQUAL(keyChain.doesCertificateExist(certName), false);
 
   SecuredBag imported;
@@ -173,16 +173,16 @@ BOOST_AUTO_TEST_CASE(ExportIdentity)
 
   BOOST_CHECK(keyChain.doesIdentityExist(identity));
   BOOST_CHECK(keyChain.doesPublicKeyExist(keyName));
-  BOOST_CHECK(keyChain.doesKeyExistInTpm(keyName, KEY_CLASS_PRIVATE));
-  BOOST_CHECK(keyChain.doesKeyExistInTpm(keyName, KEY_CLASS_PUBLIC));
+  BOOST_CHECK(keyChain.doesKeyExistInTpm(keyName, KeyClass::PRIVATE));
+  BOOST_CHECK(keyChain.doesKeyExistInTpm(keyName, KeyClass::PUBLIC));
   BOOST_CHECK(keyChain.doesCertificateExist(certName));
 
   keyChain.deleteIdentity(identity);
 
   BOOST_CHECK_EQUAL(keyChain.doesIdentityExist(identity), false);
   BOOST_CHECK_EQUAL(keyChain.doesPublicKeyExist(keyName), false);
-  BOOST_CHECK_EQUAL(keyChain.doesKeyExistInTpm(keyName, KEY_CLASS_PRIVATE), false);
-  BOOST_CHECK_EQUAL(keyChain.doesKeyExistInTpm(keyName, KEY_CLASS_PUBLIC), false);
+  BOOST_CHECK_EQUAL(keyChain.doesKeyExistInTpm(keyName, KeyClass::PRIVATE), false);
+  BOOST_CHECK_EQUAL(keyChain.doesKeyExistInTpm(keyName, KeyClass::PUBLIC), false);
   BOOST_CHECK_EQUAL(keyChain.doesCertificateExist(certName), false);
 }
 

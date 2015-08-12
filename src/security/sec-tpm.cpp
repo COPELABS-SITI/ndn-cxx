@@ -290,7 +290,7 @@ SecTpm::importPrivateKeyPkcs5IntoTpm(const Name& keyName,
   //determine key type
   StringSource privateKeySource(privateKeyOs.buf()->buf(), privateKeyOs.buf()->size(), true);
 
-  KeyType publicKeyType = KEY_TYPE_NULL;
+  KeyType publicKeyType = KeyType::NONE;
   SecByteBlock rawKeyBits;
   // PrivateKeyInfo ::= SEQUENCE {
   //   INTEGER,
@@ -305,9 +305,9 @@ SecTpm::importPrivateKeyPkcs5IntoTpm(const Name& keyName,
       OID keyTypeOID;
       keyTypeOID.decode(sequenceDecoder);
       if (keyTypeOID == oid::RSA)
-        publicKeyType = KEY_TYPE_RSA;
+        publicKeyType = KeyType::RSA;
       else if (keyTypeOID == oid::ECDSA)
-        publicKeyType = KEY_TYPE_ECDSA;
+        publicKeyType = KeyType::EC;
       else
         return false; // Unsupported key type;
     }
@@ -319,7 +319,7 @@ SecTpm::importPrivateKeyPkcs5IntoTpm(const Name& keyName,
 
   try {
     switch (publicKeyType) {
-    case KEY_TYPE_RSA:
+    case KeyType::RSA:
       {
         RSA::PrivateKey privateKey;
         privateKey.Load(StringStore(privateKeyOs.buf()->buf(), privateKeyOs.buf()->size()).Ref());
@@ -330,7 +330,7 @@ SecTpm::importPrivateKeyPkcs5IntoTpm(const Name& keyName,
         publicKeySink.MessageEnd();
         break;
       }
-    case KEY_TYPE_ECDSA:
+    case KeyType::EC:
       {
         ECDSA<ECP, SHA256>::PrivateKey privateKey;
         privateKey.Load(StringStore(privateKeyOs.buf()->buf(), privateKeyOs.buf()->size()).Ref());

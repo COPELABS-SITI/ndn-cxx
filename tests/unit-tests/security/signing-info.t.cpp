@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 
   BOOST_CHECK_EQUAL(info.getSignerType(), SigningInfo::SIGNER_TYPE_NULL);
   BOOST_CHECK_EQUAL(info.getSignerName(), SigningInfo::EMPTY_NAME);
-  BOOST_CHECK_EQUAL(info.getDigestAlgorithm(), DIGEST_ALGORITHM_SHA256);
+  BOOST_CHECK_EQUAL(info.getDigestAlgorithm(), DigestAlgorithm::SHA256);
 
   const SignatureInfo& sigInfo = info.getSignatureInfo();
   BOOST_CHECK_EQUAL(sigInfo.getSignatureType(), -1);

@@ -531,7 +531,7 @@ KeyChain::sign(const uint8_t* buffer, size_t bufferLength, const SigningInfo& pa
   Name keyName;
   SignatureInfo sigInfo;
   std::tie(keyName, sigInfo) = prepareSignatureInfo(params);
-  return pureSign(buffer, bufferLength, keyName, DIGEST_ALGORITHM_SHA256);
+  return pureSign(buffer, bufferLength, keyName, DigestAlgorithm::SHA256);
 }
 
 Signature
@@ -547,7 +547,7 @@ KeyChain::sign(const uint8_t* buffer, size_t bufferLength, const Name& certifica
   // For temporary usage, we support SHA256 only, but will support more.
   sig.setValue(m_tpm->signInTpm(buffer, bufferLength,
                                 certificate->getPublicKeyName(),
-                                DIGEST_ALGORITHM_SHA256));
+                                DigestAlgorithm::SHA256));
 
   return sig;
 }
@@ -586,15 +586,16 @@ void
 KeyChain::selfSign(IdentityCertificate& cert)
 {
   Name keyName = cert.getPublicKeyName();
-  if (!m_tpm->doesKeyExistInTpm(keyName, KEY_CLASS_PRIVATE))
+
+  if (!m_tpm->doesKeyExistInTpm(keyName, KeyClass::PRIVATE))
     BOOST_THROW_EXCEPTION(SecTpm::Error("Private key does not exist"));
 
   SignatureInfo sigInfo(cert.getSignature().getInfo());
   sigInfo.setKeyLocator(KeyLocator(cert.getName().getPrefix(-1)));
   sigInfo.setSignatureType(getSignatureType(cert.getPublicKeyInfo().getKeyType(),
-                                            DIGEST_ALGORITHM_SHA256));
+                                            DigestAlgorithm::SHA256));
 
-  signPacketWrapper(cert, Signature(sigInfo), keyName, DIGEST_ALGORITHM_SHA256);
+  signPacketWrapper(cert, Signature(sigInfo), keyName, DigestAlgorithm::SHA256);
 }
 
 shared_ptr<SecuredBag>
@@ -837,9 +838,9 @@ tlv::SignatureTypeValue
 KeyChain::getSignatureType(KeyType keyType, DigestAlgorithm digestAlgorithm)
 {
   switch (keyType) {
-    case KEY_TYPE_RSA:
+    case KeyType::RSA:
       return tlv::SignatureSha256WithRsa;
-    case KEY_TYPE_ECDSA:
+    case KeyType::EC:
       return tlv::SignatureSha256WithEcdsa;
     default:
       BOOST_THROW_EXCEPTION(Error("Unsupported key types"));

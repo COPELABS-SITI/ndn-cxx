@@ -127,7 +127,7 @@ DummyPublicInfo::getPublicKey(const Name& keyName)
 KeyType
 DummyPublicInfo::getPublicKeyType(const Name& keyName)
 {
-  return KEY_TYPE_RSA;
+  return KeyType::RSA;
 }
 
 bool

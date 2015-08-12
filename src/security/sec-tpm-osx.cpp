@@ -366,12 +366,12 @@ SecTpmOsx::generateKeyPairInTpmInternal(const Name& keyName,
                                         bool needRetry)
 {
 
-  if (doesKeyExistInTpm(keyName, KEY_CLASS_PUBLIC))
+  if (doesKeyExistInTpm(keyName, KeyClass::PUBLIC))
     {
       BOOST_THROW_EXCEPTION(Error("keyName already exists"));
     }
 
-  string keyNameUri = m_impl->toInternalKeyName(keyName, KEY_CLASS_PUBLIC);
+  string keyNameUri = m_impl->toInternalKeyName(keyName, KeyClass::PUBLIC);
 
   CFReleaser<CFStringRef> keyLabel =
     CFStringCreateWithCString(0,
@@ -388,13 +388,13 @@ SecTpmOsx::generateKeyPairInTpmInternal(const Name& keyName,
   uint32_t keySize;
   switch (keyType)
     {
-    case KEY_TYPE_RSA:
+    case KeyType::RSA:
       {
         const RsaKeyParams& rsaParams = static_cast<const RsaKeyParams&>(params);
         keySize = rsaParams.getKeySize();
         break;
       }
-    case KEY_TYPE_ECDSA:
+    case KeyType::EC:
       {
         const EcdsaKeyParams& ecdsaParams = static_cast<const EcdsaKeyParams&>(params);
         keySize = ecdsaParams.getKeySize();
@@ -464,11 +464,12 @@ SecTpmOsx::deleteKeyPairInTpmInternal(const Name& keyName, bool needRetry)
 void
 SecTpmOsx::generateSymmetricKeyInTpm(const Name& keyName, const KeyParams& params)
 {
+
   BOOST_THROW_EXCEPTION(Error("SecTpmOsx::generateSymmetricKeyInTpm is not supported"));
-  // if (doesKeyExistInTpm(keyName, KEY_CLASS_SYMMETRIC))
+  // if (doesKeyExistInTpm(keyName, KeyClass::SYMMETRIC))
   //   throw Error("keyName has existed!");
 
-  // string keyNameUri =  m_impl->toInternalKeyName(keyName, KEY_CLASS_SYMMETRIC);
+  // string keyNameUri =  m_impl->toInternalKeyName(keyName, KeyClass::SYMMETRIC);
 
   // CFReleaser<CFMutableDictionaryRef> attrDict =
   //   CFDictionaryCreateMutable(kCFAllocatorDefault,
@@ -499,7 +500,7 @@ SecTpmOsx::generateSymmetricKeyInTpm(const Name& keyName, const KeyParams& param
 shared_ptr<PublicKey>
 SecTpmOsx::getPublicKeyFromTpm(const Name& keyName)
 {
-  CFReleaser<SecKeychainItemRef> publicKey = m_impl->getKey(keyName, KEY_CLASS_PUBLIC);
+  CFReleaser<SecKeychainItemRef> publicKey = m_impl->getKey(keyName, KeyClass::PUBLIC);
   if (publicKey.get() == 0)
     {
       BOOST_THROW_EXCEPTION(Error("Requested public key [" + keyName.toUri() + "] does not exist "
@@ -533,7 +534,7 @@ SecTpmOsx::exportPrivateKeyPkcs8FromTpmInternal(const Name& keyName, bool needRe
 {
   using namespace CryptoPP;
 
-  CFReleaser<SecKeychainItemRef> privateKey = m_impl->getKey(keyName, KEY_CLASS_PRIVATE);
+  CFReleaser<SecKeychainItemRef> privateKey = m_impl->getKey(keyName, KeyClass::PRIVATE);
   if (privateKey.get() == 0)
     {
       /// @todo Can this happen because of keychain is locked?
@@ -568,13 +569,13 @@ SecTpmOsx::exportPrivateKeyPkcs8FromTpmInternal(const Name& keyName, bool needRe
   bool hasParameters = false;
   OID algorithmParameter;
   switch (publicKey->getKeyType()) {
-  case KEY_TYPE_RSA:
+  case KeyType::RSA:
     {
       algorithm = oid::RSA; // "RSA encryption"
       hasParameters = false;
       break;
     }
-  case KEY_TYPE_ECDSA:
+  case KeyType::EC:
     {
       // "ECDSA encryption"
       StringSource src(publicKey->get().buf(), publicKey->get().size(), true);
@@ -591,7 +592,7 @@ SecTpmOsx::exportPrivateKeyPkcs8FromTpmInternal(const Name& keyName, bool needRe
     }
   default:
     BOOST_THROW_EXCEPTION(Error("Unsupported key type" +
-                                boost::lexical_cast<std::string>(publicKey->getKeyType())));
+                                boost::lexical_cast<std::string>(static_cast<size_t>(publicKey->getKeyType()))));
   }
 
   OBufferStream pkcs8Os;
@@ -803,7 +804,7 @@ SecTpmOsx::signInTpmInternal(const uint8_t* data, size_t dataLength,
                                                               dataLength,
                                                               kCFAllocatorNull);
 
-  CFReleaser<SecKeychainItemRef> privateKey = m_impl->getKey(keyName, KEY_CLASS_PRIVATE);
+  CFReleaser<SecKeychainItemRef> privateKey = m_impl->getKey(keyName, KeyClass::PRIVATE);
   if (privateKey.get() == 0)
     {
       BOOST_THROW_EXCEPTION(Error("Private key [" + keyName.toUri() + "] does not exist "
@@ -885,9 +886,9 @@ SecTpmOsx::decryptInTpm(const uint8_t* data, size_t dataLength, const Name& keyN
 
   // KeyClass keyClass;
   // if (sym)
-  //   keyClass = KEY_CLASS_SYMMETRIC;
+  //   keyClass = KeyClass::SYMMETRIC;
   // else
-  //   keyClass = KEY_CLASS_PRIVATE;
+  //   keyClass = KeyClass::PRIVATE;
 
   // CFDataRef dataRef = CFDataCreate(0,
   //                                  reinterpret_cast<const unsigned char*>(data),
@@ -925,7 +926,7 @@ SecTpmOsx::decryptInTpm(const uint8_t* data, size_t dataLength, const Name& keyN
 void
 SecTpmOsx::addAppToAcl(const Name& keyName, KeyClass keyClass, const string& appPath, AclType acl)
 {
-  if (keyClass == KEY_CLASS_PRIVATE && acl == ACL_TYPE_PRIVATE)
+  if (keyClass == KeyClass::PRIVATE && acl == AclType::PRIVATE)
     {
       CFReleaser<SecKeychainItemRef> privateKey = m_impl->getKey(keyName, keyClass);
       if (privateKey.get() == 0)
@@ -977,9 +978,9 @@ SecTpmOsx::encryptInTpm(const uint8_t* data, size_t dataLength, const Name& keyN
 
   // KeyClass keyClass;
   // if (sym)
-  //   keyClass = KEY_CLASS_SYMMETRIC;
+  //   keyClass = KeyClass::SYMMETRIC;
   // else
-  //   keyClass = KEY_CLASS_PUBLIC;
+  //   keyClass = KeyClass::PUBLIC;
 
   // CFDataRef dataRef = CFDataCreate(0,
   //                                  reinterpret_cast<const unsigned char*>(data),
@@ -1086,7 +1087,7 @@ SecTpmOsx::Impl::toInternalKeyName(const Name& keyName, KeyClass keyClass)
 {
   string keyUri = keyName.toUri();
 
-  if (KEY_CLASS_SYMMETRIC == keyClass)
+  if (KeyClass::SYMMETRIC == keyClass)
     return keyUri + "/symmetric";
   else
     return keyUri;
@@ -1096,9 +1097,9 @@ CFTypeRef
 SecTpmOsx::Impl::getAsymKeyType(KeyType keyType)
 {
   switch (keyType) {
-  case KEY_TYPE_RSA:
+  case KeyType::RSA:
     return kSecAttrKeyTypeRSA;
-  case KEY_TYPE_ECDSA:
+  case KeyType::EC:
     return kSecAttrKeyTypeECDSA;
   default:
     return 0;
@@ -1109,7 +1110,7 @@ CFTypeRef
 SecTpmOsx::Impl::getSymKeyType(KeyType keyType)
 {
   switch (keyType) {
-  case KEY_TYPE_AES:
+  case KeyType::AES:
     return kSecAttrKeyTypeAES;
   default:
     return 0;
@@ -1120,11 +1121,11 @@ CFTypeRef
 SecTpmOsx::Impl::getKeyClass(KeyClass keyClass)
 {
   switch (keyClass) {
-  case KEY_CLASS_PRIVATE:
+  case KeyClass::PRIVATE:
     return kSecAttrKeyClassPrivate;
-  case KEY_CLASS_PUBLIC:
+  case KeyClass::PUBLIC:
     return kSecAttrKeyClassPublic;
-  case KEY_CLASS_SYMMETRIC:
+  case KeyClass::SYMMETRIC:
     return kSecAttrKeyClassSymmetric;
   default:
     return 0;
@@ -1135,7 +1136,7 @@ CFStringRef
 SecTpmOsx::Impl::getDigestAlgorithm(DigestAlgorithm digestAlgo)
 {
   switch (digestAlgo) {
-  case DIGEST_ALGORITHM_SHA256:
+  case DigestAlgorithm::SHA256:
     return kSecDigestSHA2;
   default:
     return 0;
@@ -1146,7 +1147,7 @@ long
 SecTpmOsx::Impl::getDigestSize(DigestAlgorithm digestAlgo)
 {
   switch (digestAlgo) {
-  case DIGEST_ALGORITHM_SHA256:
+  case DigestAlgorithm::SHA256:
     return 256;
   default:
     return -1;

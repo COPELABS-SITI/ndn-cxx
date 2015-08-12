@@ -156,7 +156,7 @@ Validator::verifySignature(const uint8_t* buf,
         {
         case tlv::SignatureSha256WithRsa:
           {
-            if (key.getKeyType() != KEY_TYPE_RSA)
+            if (key.getKeyType() != KeyType::RSA)
               return false;
 
             RSA::PublicKey publicKey;
@@ -171,7 +171,7 @@ Validator::verifySignature(const uint8_t* buf,
           }
         case tlv::SignatureSha256WithEcdsa:
           {
-            if (key.getKeyType() != KEY_TYPE_ECDSA)
+            if (key.getKeyType() != KeyType::EC)
               return false;
 
             ECDSA<ECP, SHA256>::PublicKey publicKey;

@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE(KeyTypeRsa)
   SecPublicInfoSqlite3 pib;
   pib.addKey(rsaKeyName, *rsaKey);
 
-  BOOST_CHECK_EQUAL(KEY_TYPE_RSA, pib.getPublicKeyType(rsaKeyName));
+  BOOST_CHECK_EQUAL(KeyType::RSA, pib.getPublicKeyType(rsaKeyName));
 
   pib.deleteIdentityInfo(Name("/TestSecPublicInfoSqlite3/KeyType/RSA"));
 }
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE(KeyTypeEcdsa)
   SecPublicInfoSqlite3 pib;
   pib.addKey(ecdsaKeyName, *ecdsaKey);
 
-  BOOST_CHECK_EQUAL(KEY_TYPE_ECDSA, pib.getPublicKeyType(ecdsaKeyName));
+  BOOST_CHECK_EQUAL(KeyType::EC, pib.getPublicKeyType(ecdsaKeyName));
   pib.deleteIdentityInfo(Name("/TestSecPublicInfoSqlite3/KeyType/ECDSA"));
 }
 
@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE(KeyTypeNonExist)
   Name nullKeyName("/TestSecPublicInfoSqlite3/KeyType/Null");
   SecPublicInfoSqlite3 pib;
 
-  BOOST_CHECK_EQUAL(KEY_TYPE_NULL, pib.getPublicKeyType(nullKeyName));
+  BOOST_CHECK_EQUAL(KeyType::NONE, pib.getPublicKeyType(nullKeyName));
 
 }
 

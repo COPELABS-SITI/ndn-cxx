@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(Basic)
   };
 
   OBufferStream os;
-  bufferSource(in, sizeof(in)) >> digestFilter(DIGEST_ALGORITHM_SHA256) >> streamSink(os);
+  bufferSource(in, sizeof(in)) >> digestFilter(DigestAlgorithm::SHA256) >> streamSink(os);
 
   ConstBufferPtr buf = os.buf();
   BOOST_CHECK_EQUAL_COLLECTIONS(out, out + sizeof(out), buf->begin(), buf->end());
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(StepByStep)
 
   StepSource source;
   OBufferStream os;
-  source >> digestFilter(DIGEST_ALGORITHM_SHA256) >> streamSink(os);
+  source >> digestFilter(DigestAlgorithm::SHA256) >> streamSink(os);
   source.write(in, 32);
   source.write(in + 32, 1);
   source.write(in + 33, 2);
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(EmptyInput)
 
   OBufferStream os;
   StepSource source;
-  source >> digestFilter(DIGEST_ALGORITHM_SHA256) >> streamSink(os);
+  source >> digestFilter(DigestAlgorithm::SHA256) >> streamSink(os);
   source.end();
 
   ConstBufferPtr buf = os.buf();
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(EmptyInput)
 BOOST_AUTO_TEST_CASE(Error)
 {
   OBufferStream os;
-  BOOST_REQUIRE_THROW(stepSource() >> digestFilter(DIGEST_ALGORITHM_NONE) >> streamSink(os),
+  BOOST_REQUIRE_THROW(stepSource() >> digestFilter(DigestAlgorithm::NONE) >> streamSink(os),
                       transform::Error);
 }
 

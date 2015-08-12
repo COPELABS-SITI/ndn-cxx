@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(Basic)
   };
 
   OBufferStream os;
-  bufferSource(data, sizeof(data)) >> hmacFilter(DIGEST_ALGORITHM_SHA256, key, sizeof(key)) >> streamSink(os);
+  bufferSource(data, sizeof(data)) >> hmacFilter(DigestAlgorithm::SHA256, key, sizeof(key)) >> streamSink(os);
 
   ConstBufferPtr buf = os.buf();
   BOOST_CHECK_EQUAL_COLLECTIONS(digest, digest + sizeof(digest), buf->begin(), buf->end());
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(StepByStep)
 
   OBufferStream os;
   StepSource source;
-  source >> hmacFilter(DIGEST_ALGORITHM_SHA256, key, sizeof(key)) >> streamSink(os);
+  source >> hmacFilter(DigestAlgorithm::SHA256, key, sizeof(key)) >> streamSink(os);
   source.write(data, 1);
   source.write(data + 1, 2);
   source.write(data + 3, 3);
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(EmptyInput)
 
   OBufferStream os;
   StepSource source;
-  source >> hmacFilter(DIGEST_ALGORITHM_SHA256, key, sizeof(key)) >> streamSink(os);
+  source >> hmacFilter(DigestAlgorithm::SHA256, key, sizeof(key)) >> streamSink(os);
   source.end();
 
   ConstBufferPtr buf = os.buf();
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(Error)
   };
 
   OBufferStream os;
-  BOOST_REQUIRE_THROW(stepSource() >> hmacFilter(DIGEST_ALGORITHM_NONE, key, sizeof(key)) >> streamSink(os),
+  BOOST_REQUIRE_THROW(stepSource() >> hmacFilter(DigestAlgorithm::NONE, key, sizeof(key)) >> streamSink(os),
                       transform::Error);
 }
 

@@ -75,7 +75,7 @@ public:
   static KeyType
   getType()
   {
-    return KEY_TYPE_RSA;
+    return KeyType::RSA;
   }
 
   /// @brief check if size is qualified, otherwise return the default key size.
@@ -93,7 +93,7 @@ public:
   static KeyType
   getType()
   {
-    return KEY_TYPE_ECDSA;
+    return KeyType::EC;
   }
 
   /// @brief check if size is qualified, otherwise return the default key size.
@@ -168,7 +168,7 @@ public:
   static KeyType
   getType()
   {
-    return KEY_TYPE_AES;
+    return KeyType::AES;
   }
 
   /// @brief check if size is qualified, otherwise return the default key size.

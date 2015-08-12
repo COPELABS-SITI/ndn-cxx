@@ -112,9 +112,9 @@ SecTpmFile::generateKeyPairInTpm(const Name& keyName, const KeyParams& params)
 {
   string keyURI = keyName.toUri();
 
-  if (doesKeyExistInTpm(keyName, KEY_CLASS_PUBLIC))
+  if (doesKeyExistInTpm(keyName, KeyClass::PUBLIC))
     BOOST_THROW_EXCEPTION(Error("public key exists"));
-  if (doesKeyExistInTpm(keyName, KEY_CLASS_PRIVATE))
+  if (doesKeyExistInTpm(keyName, KeyClass::PRIVATE))
     BOOST_THROW_EXCEPTION(Error("private key exists"));
 
   string keyFileName = m_impl->maintainMapping(keyURI);
@@ -123,7 +123,7 @@ SecTpmFile::generateKeyPairInTpm(const Name& keyName, const KeyParams& params)
     {
       switch (params.getKeyType())
         {
-        case KEY_TYPE_RSA:
+        case KeyType::RSA:
           {
             using namespace CryptoPP;
 
@@ -148,7 +148,7 @@ SecTpmFile::generateKeyPairInTpm(const Name& keyName, const KeyParams& params)
             chmod(publicKeyFileName.c_str(), 0000444);
             return;
           }
-        case KEY_TYPE_ECDSA:
+        case KeyType::EC:
           {
             using namespace CryptoPP;
 
@@ -225,7 +225,7 @@ SecTpmFile::getPublicKeyFromTpm(const Name&  keyName)
 {
   string keyURI = keyName.toUri();
 
-  if (!doesKeyExistInTpm(keyName, KEY_CLASS_PUBLIC))
+  if (!doesKeyExistInTpm(keyName, KeyClass::PUBLIC))
     BOOST_THROW_EXCEPTION(Error("Public Key does not exist"));
 
   ostringstream os;
@@ -307,7 +307,7 @@ SecTpmFile::signInTpm(const uint8_t* data, size_t dataLength,
 {
   string keyURI = keyName.toUri();
 
-  if (!doesKeyExistInTpm(keyName, KEY_CLASS_PRIVATE))
+  if (!doesKeyExistInTpm(keyName, KeyClass::PRIVATE))
     BOOST_THROW_EXCEPTION(Error("private key doesn't exist"));
 
   try
@@ -321,7 +321,7 @@ SecTpmFile::signInTpm(const uint8_t* data, size_t dataLength,
 
       switch (pubkeyPtr->getKeyType())
         {
-          case KEY_TYPE_RSA:
+          case KeyType::RSA:
             {
               //Read private key
               ByteQueue bytes;
@@ -335,7 +335,7 @@ SecTpmFile::signInTpm(const uint8_t* data, size_t dataLength,
               //Sign message
               switch (digestAlgorithm)
                 {
-                case DIGEST_ALGORITHM_SHA256:
+                case DigestAlgorithm::SHA256:
                   {
                     RSASS<PKCS1v15, SHA256>::Signer signer(privateKey);
 
@@ -350,7 +350,7 @@ SecTpmFile::signInTpm(const uint8_t* data, size_t dataLength,
                   BOOST_THROW_EXCEPTION(Error("Unsupported digest algorithm"));
                 }
             }
-        case KEY_TYPE_ECDSA:
+        case KeyType::EC:
           {
             //Read private key
             ByteQueue bytes;
@@ -362,7 +362,7 @@ SecTpmFile::signInTpm(const uint8_t* data, size_t dataLength,
             //Sign message
             switch (digestAlgorithm)
               {
-              case DIGEST_ALGORITHM_SHA256:
+              case DigestAlgorithm::SHA256:
                 {
                   ECDSA<ECP, SHA256>::PrivateKey privateKey;
                   privateKey.Load(bytes);
@@ -405,7 +405,7 @@ SecTpmFile::decryptInTpm(const uint8_t* data, size_t dataLength,
   // string keyURI = keyName.toUri();
   // if (!isSymmetric)
   //   {
-  //     if (!doesKeyExistInTpm(keyName, KEY_CLASS_PRIVATE))
+  //     if (!doesKeyExistInTpm(keyName, KeyClass::PRIVATE))
   //       throw Error("private key doesn't exist");
 
   //     try{
@@ -433,7 +433,7 @@ SecTpmFile::decryptInTpm(const uint8_t* data, size_t dataLength,
   // else
   //   {
   //     throw Error("Symmetric encryption is not implemented!");
-  //     // if (!doesKeyExistInTpm(keyName, KEY_CLASS_SYMMETRIC))
+  //     // if (!doesKeyExistInTpm(keyName, KeyClass::SYMMETRIC))
   //     //     throw Error("symmetric key doesn't exist");
 
   //     // try{
@@ -468,7 +468,7 @@ SecTpmFile::encryptInTpm(const uint8_t* data, size_t dataLength,
 
   // if (!isSymmetric)
   //   {
-  //     if (!doesKeyExistInTpm(keyName, KEY_CLASS_PUBLIC))
+  //     if (!doesKeyExistInTpm(keyName, KeyClass::PUBLIC))
   //       throw Error("public key doesn't exist");
   //     try
   //       {
@@ -496,7 +496,7 @@ SecTpmFile::encryptInTpm(const uint8_t* data, size_t dataLength,
   // else
   //   {
   //     throw Error("Symmetric encryption is not implemented!");
-  //     // if (!doesKeyExistInTpm(keyName, KEY_CLASS_SYMMETRIC))
+  //     // if (!doesKeyExistInTpm(keyName, KeyClass::SYMMETRIC))
   //     //     throw Error("symmetric key doesn't exist");
 
   //     // try{
@@ -527,7 +527,7 @@ SecTpmFile::generateSymmetricKeyInTpm(const Name& keyName, const KeyParams& para
   BOOST_THROW_EXCEPTION(Error("SecTpmFile::generateSymmetricKeyInTpm is not supported"));
   // string keyURI = keyName.toUri();
 
-  // if (doesKeyExistInTpm(keyName, KEY_CLASS_SYMMETRIC))
+  // if (doesKeyExistInTpm(keyName, KeyClass::SYMMETRIC))
   //   throw Error("symmetric key exists");
 
   // string keyFileName = m_impl->maintainMapping(keyURI);
@@ -535,7 +535,7 @@ SecTpmFile::generateSymmetricKeyInTpm(const Name& keyName, const KeyParams& para
 
   // try{
   //   switch (keyType){
-  //   case KEY_TYPE_AES:
+  //   case KeyType::AES:
   //     {
   //       using namespace CryptoPP;
   //       AutoSeededRandomPool rng;
@@ -560,21 +560,21 @@ bool
 SecTpmFile::doesKeyExistInTpm(const Name& keyName, KeyClass keyClass)
 {
   string keyURI = keyName.toUri();
-  if (keyClass == KEY_CLASS_PUBLIC)
+  if (keyClass == KeyClass::PUBLIC)
     {
       if (boost::filesystem::exists(m_impl->transformName(keyURI, ".pub")))
         return true;
       else
         return false;
     }
-  if (keyClass == KEY_CLASS_PRIVATE)
+  if (keyClass == KeyClass::PRIVATE)
     {
       if (boost::filesystem::exists(m_impl->transformName(keyURI, ".pri")))
         return true;
       else
         return false;
     }
-  if (keyClass == KEY_CLASS_SYMMETRIC)
+  if (keyClass == KeyClass::SYMMETRIC)
     {
       if (boost::filesystem::exists(m_impl->transformName(keyURI, ".key")))
         return true;

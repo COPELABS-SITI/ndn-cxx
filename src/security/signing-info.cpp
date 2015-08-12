@@ -32,7 +32,7 @@ SigningInfo::SigningInfo(SignerType signerType,
                          const SignatureInfo& signatureInfo)
   : m_type(signerType)
   , m_name(signerName)
-  , m_digestAlgorithm(DIGEST_ALGORITHM_SHA256)
+  , m_digestAlgorithm(DigestAlgorithm::SHA256)
   , m_info(signatureInfo)
 {
 }

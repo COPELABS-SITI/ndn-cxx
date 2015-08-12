@@ -284,10 +284,10 @@ Certificate::printCertificate(std::ostream& oss, const std::string& indent) cons
 
   os << "Public key bits: ";
   switch (m_key.getKeyType()) {
-  case KEY_TYPE_RSA:
+  case KeyType::RSA:
     os << "(RSA)";
     break;
-  case KEY_TYPE_ECDSA:
+  case KeyType::EC:
     os << "(ECDSA)";
     break;
   default:
