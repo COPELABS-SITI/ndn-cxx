@@ -36,7 +36,7 @@ StreamSink::doWrite(const uint8_t* buf, size_t size)
   m_os.write(reinterpret_cast<const char*>(buf), size);
 
   if (m_os.bad())
-    throw Error(getIndex(), "Fail to write data into output stream");
+    BOOST_THROW_EXCEPTION(Error(getIndex(), "Fail to write data into output stream"));
 
   return size;
 }

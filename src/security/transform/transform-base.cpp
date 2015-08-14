@@ -40,7 +40,7 @@ size_t
 Downstream::write(const uint8_t* buf, size_t size)
 {
   if (m_isEnd)
-    throw Error(getIndex(), "Module is closed, no more input");
+    BOOST_THROW_EXCEPTION(Error(getIndex(), "Module is closed, no more input"));
 
   size_t nBytesWritten = doWrite(buf, size);
   BOOST_ASSERT(nBytesWritten <= size);

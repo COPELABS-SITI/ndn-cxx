@@ -56,10 +56,10 @@ DigestFilter::DigestFilter(DigestAlgorithm algo)
 {
   const EVP_MD* md = detail::toDigestEvpMd(algo);
   if (md == nullptr)
-    throw Error(getIndex(), "Unsupported digest algorithm");
+    BOOST_THROW_EXCEPTION(Error(getIndex(), "Unsupported digest algorithm"));
 
   if (!BIO_set_md(m_impl->m_md, md))
-    throw Error(getIndex(), "Cannot set digest");
+    BOOST_THROW_EXCEPTION(Error(getIndex(), "Cannot set digest"));
 }
 
 size_t
@@ -70,7 +70,7 @@ DigestFilter::convert(const uint8_t* buf, size_t size)
   if (wLen <= 0) { // fail to write data
     if (!BIO_should_retry(m_impl->m_md)) {
       // we haven't written everything but some error happens, and we cannot retry
-      throw Error(getIndex(), "Failed to accept more input");
+      BOOST_THROW_EXCEPTION(Error(getIndex(), "Failed to accept more input"));
     }
     return 0;
   }
@@ -86,7 +86,7 @@ DigestFilter::finalize()
 
   int mdLen = BIO_gets(m_impl->m_md, reinterpret_cast<char*>(&(*buffer)[0]), EVP_MAX_MD_SIZE);
   if (mdLen <= 0)
-    throw Error(getIndex(), "Failed to compute digest");
+    BOOST_THROW_EXCEPTION(Error(getIndex(), "Failed to compute digest"));
 
   buffer->erase(buffer->begin() + mdLen, buffer->end());
   setOutputBuffer(std::move(buffer));

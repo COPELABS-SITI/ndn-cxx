@@ -74,7 +74,7 @@ void
 HexDecode::finalize()
 {
   if (m_hasOddByte)
-    throw Error(getIndex(), "Incomplete input");
+    BOOST_THROW_EXCEPTION(Error(getIndex(), "Incomplete input"));
 }
 
 unique_ptr<Transform::OBuffer>
@@ -86,7 +86,7 @@ HexDecode::toBytes(const uint8_t* hex, size_t hexLen)
 
   if (m_hasOddByte) {
     if (C2H[hex[0]] < 0 || C2H[m_oddByte] < 0)
-      throw Error(getIndex(), "Wrong input byte");
+      BOOST_THROW_EXCEPTION(Error(getIndex(), "Wrong input byte"));
 
     buf[0] = (C2H[m_oddByte] << 4) + (C2H[hex[0]]);
     buf += 1;
@@ -96,7 +96,7 @@ HexDecode::toBytes(const uint8_t* hex, size_t hexLen)
 
   while (hexLen > 1) {
     if (C2H[hex[0]] < 0 || C2H[hex[1]] < 0)
-      throw Error(getIndex(), "Wrong input byte");
+      BOOST_THROW_EXCEPTION(Error(getIndex(), "Wrong input byte"));
 
     buf[0] = (C2H[hex[0]] << 4) + (C2H[hex[1]]);
     buf += 1;

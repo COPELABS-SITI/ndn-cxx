@@ -85,7 +85,7 @@ Base64Decode::convert(const uint8_t* buf, size_t size)
   if (wLen <= 0) { // fail to write data
     if (!BIO_should_retry(m_impl->m_source)) {
       // we haven't written everything but some error happens, and we cannot retry
-      throw Error(getIndex(), "Failed to accept more input");
+      BOOST_THROW_EXCEPTION(Error(getIndex(), "Failed to accept more input"));
     }
     return 0;
   }

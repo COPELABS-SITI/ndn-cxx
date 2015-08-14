@@ -76,7 +76,7 @@ Base64Encode::convert(const uint8_t* data, size_t dataLen)
   if (wLen <= 0) { // fail to write data
     if (!BIO_should_retry(m_impl->m_base64)) {
       // we haven't written everything but some error happens, and we cannot retry
-      throw Error(getIndex(), "Failed to accept more input");
+      BOOST_THROW_EXCEPTION(Error(getIndex(), "Failed to accept more input"));
     }
     return 0;
   }
@@ -90,7 +90,7 @@ void
 Base64Encode::finalize()
 {
   if (BIO_flush(m_impl->m_base64) != 1)
-    throw Error(getIndex(), "Failed to flush");
+    BOOST_THROW_EXCEPTION(Error(getIndex(), "Failed to flush"));
 
   while (!isConverterEmpty()) {
     fillOutputBuffer();
