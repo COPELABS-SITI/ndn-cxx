@@ -31,7 +31,7 @@ using tmp::Certificate;
 
 static const ssize_t KEY_ID_OFFSET = -2;
 
-PibMemory::PibMemory()
+PibMemory::PibMemory(const std::string& locator)
   : m_hasDefaultIdentity(false)
 {
 }
@@ -39,14 +39,32 @@ PibMemory::PibMemory()
 void
 PibMemory::setTpmLocator(const std::string& tpmLocator)
 {
-  // The locator of PibMemory is always 'tpm-memory:'
-  BOOST_THROW_EXCEPTION(Error("PibMemory does not need a locator"));
+  m_tpmLocator = tpmLocator;
 }
 
 std::string
 PibMemory::getTpmLocator() const
 {
-  return "tpm-memory:";
+  if (m_tpmLocator.empty())
+    BOOST_THROW_EXCEPTION(Pib::Error("TPM info does not exist"));
+  else
+    return m_tpmLocator;
+}
+
+void
+PibMemory::reset()
+{
+  m_tpmLocator.clear();
+
+  m_identities.clear();
+  m_hasDefaultIdentity = false;
+  m_defaultIdentity.clear();
+
+  m_keys.clear();
+  m_defaultKey.clear();
+
+  m_certs.clear();
+  m_defaultCert.clear();
 }
 
 bool

@@ -230,6 +230,36 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(CertificateManagement, T, PibImpls, PibDataFixt
   BOOST_CHECK_EQUAL(certNames.size(), 0);
 }
 
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(TpmLocator, T, PibImpls, PibDataFixture)
+{
+  T wrapper;
+  PibImpl& pibImpl = wrapper.impl;
+
+  // Basic getting and setting
+  BOOST_REQUIRE_THROW(pibImpl.getTpmLocator(), Pib::Error);
+  pibImpl.setTpmLocator("tpmLocator");
+  BOOST_CHECK_EQUAL(pibImpl.getTpmLocator(), "tpmLocator");
+
+}
+
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(Reset, T, PibImpls, PibDataFixture)
+{
+  T wrapper;
+  PibImpl& pibImpl = wrapper.impl;
+
+  // Add id, key, and cert
+  pibImpl.addCertificate(id1Key1Cert1);
+  BOOST_CHECK(pibImpl.hasIdentity(id1));
+  BOOST_CHECK(pibImpl.hasKey(id1Key1Name));
+  BOOST_CHECK(pibImpl.hasCertificate(id1Key1Cert1.getName()));
+
+  // Reset
+  pibImpl.reset();
+  BOOST_CHECK_EQUAL(pibImpl.getIdentities().size(), 0);
+  BOOST_CHECK_EQUAL(pibImpl.getKeysOfIdentity(id1).size(), 0);
+  BOOST_CHECK_EQUAL(pibImpl.getCertificatesOfKey(id1Key1Name).size(), 0);
+}
+
 BOOST_AUTO_TEST_SUITE_END() // TestPibImpl
 BOOST_AUTO_TEST_SUITE_END() // Pib
 BOOST_AUTO_TEST_SUITE_END() // Security

@@ -277,6 +277,15 @@ PibSqlite3::getTpmLocator() const
     BOOST_THROW_EXCEPTION(Pib::Error("TPM info does not exist"));
 }
 
+void
+PibSqlite3::reset()
+{
+  setTpmLocator("");
+
+  Sqlite3Statement statement(m_database, "DELETE FROM identities");
+  statement.step();
+}
+
 bool
 PibSqlite3::hasIdentity(const Name& identity) const
 {

@@ -19,8 +19,8 @@
  * See AUTHORS.md for complete list of ndn-cxx authors and contributors.
  */
 
-#ifndef NDN_SECURITY_PIB_IMPL_HPP
-#define NDN_SECURITY_PIB_IMPL_HPP
+#ifndef NDN_SECURITY_PIB_PIB_IMPL_HPP
+#define NDN_SECURITY_PIB_PIB_IMPL_HPP
 
 #include <set>
 #include "../tmp/certificate.hpp"
@@ -66,10 +66,7 @@ public: // TpmLocator management
   /**
    * @brief Set the corresponding TPM information to @p tpmLocator.
    *
-   * If the provided @p tpmLocator is different from the existing one, the
-   * content in PIB will be cleaned up, otherwise nothing will be changed.
-   *
-   * @param tpmLocator The name for the new TPM locator
+   * @param tmpLocator The name for the new tmpLocator
    */
   virtual void
   setTpmLocator(const std::string& tpmLocator) = 0;
@@ -79,6 +76,12 @@ public: // TpmLocator management
    */
   virtual std::string
   getTpmLocator() const = 0;
+
+  /**
+   * @brief Reset the database.
+   */
+  virtual void
+  reset() = 0;
 
 public: // Identity management
 
@@ -286,4 +289,4 @@ public: // Certificate Management
 } // namespace security
 } // namespace ndn
 
-#endif // NDN_SECURITY_PIB_IMPL_HPP
+#endif // NDN_SECURITY_PIB_PIB_IMPL_HPP

@@ -19,8 +19,8 @@
  * See AUTHORS.md for complete list of ndn-cxx authors and contributors.
  */
 
-#ifndef NDN_SECURITTY_PIB_SQLITE3_HPP
-#define NDN_SECURITTY_PIB_SQLITE3_HPP
+#ifndef NDN_SECURITTY_PIB_PIB_SQLITE3_HPP
+#define NDN_SECURITTY_PIB_PIB_SQLITE3_HPP
 
 #include "pib-impl.hpp"
 
@@ -64,9 +64,6 @@ public: // TpmLocator management
   /**
    * @brief Set the corresponding TPM information to @p tpmLocator.
    *
-   * If the provided @p tpmLocator is different from the existing one, the
-   * content in PIB will be cleaned up, otherwise nothing will be changed.
-   *
    * @param tmpLocator The name for the new tmpLocator
    */
   virtual void
@@ -77,6 +74,12 @@ public: // TpmLocator management
    */
   virtual std::string
   getTpmLocator() const NDN_CXX_DECL_FINAL;
+
+  /**
+   * @brief Reset the database.
+   */
+  virtual void
+  reset() NDN_CXX_DECL_FINAL;
 
 public: // Identity management
   virtual bool
@@ -150,4 +153,4 @@ private:
 } // namespace security
 } // namespace ndn
 
-#endif // NDN_SECURITTY_PIB_SQLITE3_HPP
+#endif // NDN_SECURITTY_PIB_PIB_SQLITE3_HPP

@@ -87,10 +87,7 @@ public:
   /**
    * @brief Set the corresponding TPM information to @p tpmLocator.
    *
-   * If the provided @p tpmLocator is different from the existing one, the
-   * PIB will be reset, otherwise nothing will be changed.
-   *
-   * @param tpmLocator The name for the new TPM locator
+   * @param tmpLocator The name for the new tmpLocator
    */
   void
   setTpmLocator(const std::string& tpmLocator);
@@ -100,6 +97,12 @@ public:
    */
   std::string
   getTpmLocator() const;
+
+  /**
+   * @brief Reset content in PIB
+   */
+  void
+  reset();
 
   /**
    * @brief Get an identity with name @p identityName.

@@ -57,6 +57,15 @@ Pib::getTpmLocator() const
   return m_impl->getTpmLocator();
 }
 
+void
+Pib::reset()
+{
+  m_impl->reset();
+
+  m_hasDefaultIdentity = false;
+  m_needRefreshIdentities = true;
+}
+
 Identity
 Pib::addIdentity(const Name& identity)
 {

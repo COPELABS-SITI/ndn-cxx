@@ -19,8 +19,8 @@
  * See AUTHORS.md for complete list of ndn-cxx authors and contributors.
  */
 
-#ifndef NDN_SECURITY_PIB_MEMORY_HPP
-#define NDN_SECURITY_PIB_MEMORY_HPP
+#ifndef NDN_SECURITY_PIB_PIB_MEMORY_HPP
+#define NDN_SECURITY_PIB_PIB_MEMORY_HPP
 
 #include "pib-impl.hpp"
 
@@ -48,7 +48,7 @@ public:
   };
 
 public:
-  PibMemory();
+  PibMemory(const std::string& locator = "");
 
 public: // TpmLocator management
 
@@ -57,6 +57,9 @@ public: // TpmLocator management
 
   virtual std::string
   getTpmLocator() const NDN_CXX_DECL_OVERRIDE;
+
+  virtual void
+  reset() NDN_CXX_DECL_OVERRIDE;
 
 public: // Identity management
 
@@ -127,6 +130,8 @@ public: // Certificate management
 
 private:
 
+  std::string m_tpmLocator;
+
   std::set<Name> m_identities;
   bool m_hasDefaultIdentity;
   Name m_defaultIdentity;
@@ -148,4 +153,4 @@ private:
 } // namespace security
 } // namespace ndn
 
-#endif // NDN_SECURITY_PIB_MEMORY_HPP
+#endif // NDN_SECURITY_PIB_PIB_MEMORY_HPP
