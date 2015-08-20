@@ -73,6 +73,15 @@ public:
   }
 
   /**
+   * @brief Get SignatureInfo
+   */
+  const SignatureInfo&
+  getSignatureInfo() const
+  {
+    return m_info;
+  }
+
+  /**
    * @brief Set SignatureInfo from a block
    *
    * @throws tlv::Error if supplied block is not formatted correctly

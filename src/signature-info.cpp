@@ -119,6 +119,7 @@ SignatureInfo::getValidityPeriod() const
 void
 SignatureInfo::appendTypeSpecificTlv(const Block& block)
 {
+  m_wire.reset();
   m_otherTlvs.push_back(block);
 }
 
@@ -215,7 +216,7 @@ SignatureInfo::wireDecode(const Block& wire)
 
   // Decode the rest of type-specific TLVs, if any
   while (it != m_wire.elements_end()) {
-    appendTypeSpecificTlv(*it);
+    m_otherTlvs.push_back(*it);
     it++;
   }
 }
