@@ -22,40 +22,38 @@
 #include "common.hpp"
 
 #include "random.hpp"
+#include "../security/detail/openssl.hpp"
 
 #include <boost/nondet_random.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
 
-#include "../security/cryptopp.hpp"
-
 namespace ndn {
 namespace random {
 
-// CryptoPP-based (secure) random generators
-
-static CryptoPP::AutoSeededRandomPool&
-getSecureRandomGenerator()
-{
-  static CryptoPP::AutoSeededRandomPool rng;
-
-  return rng;
-}
+// OpenSSL-based (secure) pseudo-randomness generators
 
 uint32_t
 generateSecureWord32()
 {
-  return getSecureRandomGenerator().GenerateWord32();
+  uint32_t random;
+  generateSecureBlob(reinterpret_cast<uint8_t*>(&random), sizeof(random));
+  return random;
 }
 
 uint64_t
 generateSecureWord64()
 {
   uint64_t random;
-  getSecureRandomGenerator()
-    .GenerateBlock(reinterpret_cast<unsigned char*>(&random), sizeof(uint64_t));
-
+  generateSecureBlob(reinterpret_cast<uint8_t*>(&random), sizeof(random));
   return random;
+}
+
+void
+generateSecureBlob(uint8_t* blob, size_t size)
+{
+  if (1 != RAND_bytes(blob, size))
+    throw std::runtime_error("failed to generate random blob");
 }
 
 // Boost.Random-based (simple) random generators

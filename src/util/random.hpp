@@ -30,7 +30,8 @@ namespace random {
 /**
  * @brief Generate a cryptographically secure random integer from the range [0, 2^32)
  *
- * This method uses CryptoPP routines
+ * This method uses OpenSSL routines
+ * @throw std::runtime_error if generation fails.
  */
 uint32_t
 generateSecureWord32();
@@ -38,10 +39,20 @@ generateSecureWord32();
 /**
  * @brief Generate a cryptographically secure random integer from the range [0, 2^64)
  *
- * This method uses CryptoPP routines
+ * This method uses OpenSSL routines
+ * @throw std::runtime_error if generation fails.
  */
 uint64_t
 generateSecureWord64();
+
+/**
+ * @brief Fill @p blob of @p size with cryptographically secure random bytes
+ *
+ * This method uses OpenSSL routines
+ * @throw std::runtime_error if generation fails.
+ */
+void
+generateSecureBlob(uint8_t* blob, size_t size);
 
 /**
  * @brief Generate a cryptographically non-secure random integer from the range [0, 2^32)
@@ -66,6 +77,7 @@ generateWord32();
  */
 uint64_t
 generateWord64();
+
 
 } // namespace random
 } // namespace ndn
