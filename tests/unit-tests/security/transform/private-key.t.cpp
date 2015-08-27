@@ -22,7 +22,11 @@
 #include "security/transform/private-key.hpp"
 #include "security/transform/buffer-source.hpp"
 #include "security/transform/base64-decode.hpp"
+#include "security/transform/signer-filter.hpp"
+#include "security/transform/verifier-filter.hpp"
+#include "security/transform/bool-sink.hpp"
 #include "security/transform/stream-sink.hpp"
+#include "security/key-params.hpp"
 #include "encoding/buffer-stream.hpp"
 #include <iostream>
 
@@ -373,6 +377,47 @@ BOOST_AUTO_TEST_CASE(RsaEncryption)
 
   BOOST_CHECK_EQUAL_COLLECTIONS(plainText, plainText + sizeof(plainText),
                                 decryptText->begin(), decryptText->end());
+}
+
+typedef boost::mpl::list<RsaKeyParams,
+                         EcdsaKeyParams> TestKeyParams;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(GenerateKey, T, TestKeyParams)
+{
+  BOOST_REQUIRE_NO_THROW(generatePrivateKey(T()));
+
+  unique_ptr<PrivateKey> sKey = generatePrivateKey(T());
+  PublicKey pKey;
+  ConstBufferPtr pKeyBits = sKey->derivePublicKey();
+  pKey.loadPkcs8(pKeyBits->buf(), pKeyBits->size());
+
+  uint8_t data[] = {0x01, 0x02, 0x03, 0x04};
+
+  OBufferStream os;
+  BOOST_REQUIRE_NO_THROW(bufferSource(data, sizeof(data)) >>
+                         signerFilter(DigestAlgorithm::SHA256, *sKey) >>
+                         streamSink(os));
+
+  ConstBufferPtr sig = os.buf();
+  bool result = false;
+  BOOST_REQUIRE_NO_THROW(bufferSource(data, sizeof(data)) >>
+                         verifierFilter(DigestAlgorithm::SHA256, pKey, sig->buf(), sig->size()) >>
+                         boolSink(result));
+
+  BOOST_CHECK(result);
+
+
+  unique_ptr<PrivateKey> sKey2 = generatePrivateKey(T());
+
+  OBufferStream os1;
+  sKey->savePkcs1(os1);
+  ConstBufferPtr key1Pkcs1 = os1.buf();
+
+  OBufferStream os2;
+  sKey2->savePkcs1(os2);
+  ConstBufferPtr key2Pkcs1 = os2.buf();
+
+  BOOST_CHECK(*key1Pkcs1 != *key2Pkcs1);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

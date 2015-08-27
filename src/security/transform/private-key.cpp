@@ -27,6 +27,7 @@
 #include "stream-sink.hpp"
 #include "../../encoding/buffer-stream.hpp"
 #include "../detail/openssl-helper.hpp"
+#include "../key-params.hpp"
 
 #include <string.h>
 
@@ -336,6 +337,102 @@ PrivateKey::rsaDecrypt(const uint8_t* cipherText, size_t cipherLen) const
 
   out->resize(outlen);
   return out;
+}
+
+static unique_ptr<PrivateKey>
+generateRsaKey(uint32_t keySize)
+{
+  detail::EvpPkeyCtx kctx(EVP_PKEY_RSA);
+
+  int ret = EVP_PKEY_keygen_init(kctx.get());
+  if (ret != 1)
+    BOOST_THROW_EXCEPTION(std::runtime_error("Fail to generate RSA key"));
+
+  ret = EVP_PKEY_CTX_set_rsa_keygen_bits(kctx.get(), keySize);
+  if (ret != 1)
+    BOOST_THROW_EXCEPTION(std::runtime_error("Fail to generate RSA key"));
+
+  detail::EvpPkey key;
+  ret = EVP_PKEY_keygen(kctx.get(), &key);
+  if (ret != 1)
+    BOOST_THROW_EXCEPTION(std::runtime_error("Fail to generate RSA key"));
+
+  detail::Bio mem(BIO_s_mem());
+  i2d_PrivateKey_bio(mem.get(), key.get());
+  int len = BIO_pending(mem.get());
+  Buffer buffer(len);
+  BIO_read(mem.get(), buffer.buf(), len);
+
+  unique_ptr<PrivateKey> privateKey(new PrivateKey);
+  privateKey->loadPkcs1(buffer.buf(), buffer.size());
+
+  return privateKey;
+}
+
+static unique_ptr<PrivateKey>
+generateEcKey(uint32_t keySize)
+{
+  detail::EvpPkeyCtx ctx(EVP_PKEY_EC);
+
+  int ret = EVP_PKEY_paramgen_init(ctx.get());
+  if (ret != 1)
+    BOOST_THROW_EXCEPTION(std::runtime_error("Fail to generate EC key"));
+
+  switch (keySize) {
+    case 256:
+      ret = EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx.get(), NID_X9_62_prime256v1);
+      break;
+    case 384:
+      ret = EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx.get(), NID_secp384r1);
+      break;
+    default:
+      BOOST_THROW_EXCEPTION(std::runtime_error("Fail to generate EC key"));
+  }
+  if (ret != 1)
+    BOOST_THROW_EXCEPTION(std::runtime_error("Fail to generate EC key"));
+
+  detail::EvpPkey params;
+  ret = EVP_PKEY_paramgen(ctx.get(), &params);
+  if (ret != 1)
+    BOOST_THROW_EXCEPTION(std::runtime_error("Fail to generate EC key"));
+
+  detail::EvpPkeyCtx kctx(params.get());
+  ret = EVP_PKEY_keygen_init(kctx.get());
+  if (ret != 1)
+    BOOST_THROW_EXCEPTION(std::runtime_error("Fail to generate EC key"));
+
+  detail::EvpPkey key;
+  ret = EVP_PKEY_keygen(kctx.get(), &key);
+  if (ret != 1)
+    BOOST_THROW_EXCEPTION(std::runtime_error("Fail to generate EC key"));
+
+  detail::Bio mem(BIO_s_mem());
+  i2d_PrivateKey_bio(mem.get(), key.get());
+  int len = BIO_pending(mem.get());
+  Buffer buffer(len);
+  BIO_read(mem.get(), buffer.buf(), len);
+
+  unique_ptr<PrivateKey> privateKey(new PrivateKey);
+  privateKey->loadPkcs1(buffer.buf(), buffer.size());
+
+  return privateKey;
+}
+
+unique_ptr<PrivateKey>
+generatePrivateKey(const KeyParams& keyParams)
+{
+  switch (keyParams.getKeyType()) {
+    case KeyType::RSA: {
+      const RsaKeyParams& rsaParams = static_cast<const RsaKeyParams&>(keyParams);
+      return generateRsaKey(rsaParams.getKeySize());
+    }
+    case KeyType::EC: {
+      const EcdsaKeyParams& ecdsaParams = static_cast<const EcdsaKeyParams&>(keyParams);
+      return generateEcKey(ecdsaParams.getKeySize());
+    }
+    default:
+      BOOST_THROW_EXCEPTION(std::invalid_argument("Unsupported asymmetric key type"));
+  }
 }
 
 } // namespace transform

@@ -32,11 +32,37 @@ namespace detail {
 const EVP_MD*
 toDigestEvpMd(DigestAlgorithm algo);
 
+class EvpPkey
+{
+public:
+  EvpPkey();
+
+  ~EvpPkey();
+
+  EVP_PKEY*
+  get() const
+  {
+    return m_key;
+  }
+
+  EVP_PKEY**
+  operator&()
+  {
+    return &m_key;
+  }
+
+private:
+  EVP_PKEY* m_key;
+};
+
 class EvpPkeyCtx
 {
 public:
   explicit
   EvpPkeyCtx(EVP_PKEY* key);
+
+  explicit
+  EvpPkeyCtx(int id);
 
   ~EvpPkeyCtx();
 

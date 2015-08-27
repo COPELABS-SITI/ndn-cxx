@@ -26,6 +26,9 @@
 #include "../../encoding/buffer.hpp"
 
 namespace ndn {
+
+class KeyParams;
+
 namespace security {
 namespace transform {
 
@@ -236,6 +239,17 @@ private:
   class Impl;
   unique_ptr<Impl> m_impl;
 };
+
+/**
+ * @brief generate a private key according to @p keyParams.
+ *
+ * @note the public key can be derived from the private key
+ *
+ * @throw std::argument_error if the key type is not supported
+ * @throw std::runtime_error when failing to generate the key
+ */
+unique_ptr<PrivateKey>
+generatePrivateKey(const KeyParams& keyParams);
 
 } // namespace transform
 } // namespace security

@@ -36,8 +36,24 @@ toDigestEvpMd(DigestAlgorithm algo)
   }
 }
 
+EvpPkey::EvpPkey()
+  : m_key(nullptr)
+{
+}
+
+EvpPkey::~EvpPkey()
+{
+  EVP_PKEY_free(m_key);
+}
+
 EvpPkeyCtx::EvpPkeyCtx(EVP_PKEY* key)
   : m_ctx(EVP_PKEY_CTX_new(key, nullptr))
+{
+  BOOST_ASSERT(m_ctx != nullptr);
+}
+
+EvpPkeyCtx::EvpPkeyCtx(int id)
+  : m_ctx(EVP_PKEY_CTX_new_id(id, nullptr))
 {
   BOOST_ASSERT(m_ctx != nullptr);
 }
