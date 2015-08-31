@@ -32,6 +32,8 @@ namespace security {
 namespace transform {
 namespace tests {
 
+BOOST_AUTO_TEST_SUITE(Security)
+
 BOOST_AUTO_TEST_SUITE(TransformBlockCipher)
 
 BOOST_AUTO_TEST_CASE(AesCbc)
@@ -95,6 +97,8 @@ BOOST_AUTO_TEST_CASE(AesCbc)
   BOOST_CHECK_EQUAL_COLLECTIONS(plainText, plainText + sizeof(plainText),
                                 buf2->begin(), buf2->end());
 }
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE_END()
 

@@ -28,6 +28,8 @@ namespace security {
 namespace transform {
 namespace tests {
 
+BOOST_AUTO_TEST_SUITE(Security)
+
 BOOST_AUTO_TEST_SUITE(TransformBoolSink)
 
 BOOST_AUTO_TEST_CASE(Basic)
@@ -50,6 +52,8 @@ BOOST_AUTO_TEST_CASE(Basic)
   BOOST_CHECK_EQUAL(value2, true);
   BOOST_CHECK_THROW(sink2.write(in2 + 1, 1), transform::Error);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE_END()
 

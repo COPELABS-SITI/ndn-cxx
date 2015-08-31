@@ -32,6 +32,8 @@ namespace security {
 namespace transform {
 namespace tests {
 
+BOOST_AUTO_TEST_SUITE(Security)
+
 BOOST_AUTO_TEST_SUITE(TransformDigestFilter)
 
 BOOST_AUTO_TEST_CASE(Basic)
@@ -136,6 +138,8 @@ BOOST_AUTO_TEST_CASE(Error)
   BOOST_REQUIRE_THROW(stepSource() >> digestFilter(DigestAlgorithm::NONE) >> streamSink(os),
                       transform::Error);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE_END()
 

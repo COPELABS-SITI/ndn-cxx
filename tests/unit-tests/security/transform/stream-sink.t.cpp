@@ -28,6 +28,8 @@ namespace security {
 namespace transform {
 namespace tests {
 
+BOOST_AUTO_TEST_SUITE(Security)
+
 BOOST_AUTO_TEST_SUITE(TransformStreamSink)
 
 BOOST_AUTO_TEST_CASE(Basic)
@@ -47,6 +49,8 @@ BOOST_AUTO_TEST_CASE(Basic)
   BOOST_CHECK_EQUAL_COLLECTIONS(in, in + sizeof(in), out.begin(), out.end());
   BOOST_CHECK_THROW(sink.write(in + 8, 8), transform::Error);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE_END()
 

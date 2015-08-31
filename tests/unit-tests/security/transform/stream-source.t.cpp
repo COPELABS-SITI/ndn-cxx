@@ -29,6 +29,8 @@ namespace security {
 namespace transform {
 namespace tests {
 
+BOOST_AUTO_TEST_SUITE(Security)
+
 BOOST_AUTO_TEST_SUITE(TransformStreamSource)
 
 BOOST_AUTO_TEST_CASE(Basic)
@@ -62,6 +64,8 @@ BOOST_AUTO_TEST_CASE(Basic)
 
   BOOST_CHECK_EQUAL(input, output);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE_END()
 

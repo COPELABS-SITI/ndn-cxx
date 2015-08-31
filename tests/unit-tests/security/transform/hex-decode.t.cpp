@@ -33,6 +33,8 @@ namespace security {
 namespace transform {
 namespace tests {
 
+BOOST_AUTO_TEST_SUITE(Security)
+
 BOOST_AUTO_TEST_SUITE(TransformHexDecode)
 
 BOOST_AUTO_TEST_CASE(Basic)
@@ -282,6 +284,8 @@ BOOST_AUTO_TEST_CASE(EmptyInput)
   source.end();
   BOOST_CHECK_EQUAL(os.buf()->size(), 0);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE_END()
 

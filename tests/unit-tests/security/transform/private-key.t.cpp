@@ -38,6 +38,8 @@ namespace security {
 namespace transform {
 namespace tests {
 
+BOOST_AUTO_TEST_SUITE(Security)
+
 BOOST_AUTO_TEST_SUITE(TransformPrivateKey)
 
 class RsaKeyTestData
@@ -419,6 +421,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(GenerateKey, T, TestKeyParams)
 
   BOOST_CHECK(*key1Pkcs1 != *key2Pkcs1);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE_END()
 

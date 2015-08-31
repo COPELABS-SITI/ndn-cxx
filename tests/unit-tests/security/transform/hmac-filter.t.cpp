@@ -32,6 +32,8 @@ namespace security {
 namespace transform {
 namespace tests {
 
+BOOST_AUTO_TEST_SUITE(Security)
+
 BOOST_AUTO_TEST_SUITE(TransformHmacFilter)
 
 BOOST_AUTO_TEST_CASE(Basic)
@@ -128,6 +130,8 @@ BOOST_AUTO_TEST_CASE(Error)
   BOOST_REQUIRE_THROW(stepSource() >> hmacFilter(DigestAlgorithm::NONE, key, sizeof(key)) >> streamSink(os),
                       transform::Error);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE_END()
 

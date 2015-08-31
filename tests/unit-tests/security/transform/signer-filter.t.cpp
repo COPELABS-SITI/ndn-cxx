@@ -34,6 +34,8 @@ namespace security {
 namespace transform {
 namespace tests {
 
+BOOST_AUTO_TEST_SUITE(Security)
+
 BOOST_AUTO_TEST_SUITE(TransformSignerFilter)
 
 BOOST_AUTO_TEST_CASE(Rsa)
@@ -155,6 +157,8 @@ BOOST_AUTO_TEST_CASE(Ecdsa)
     BOOST_CHECK(verifier.VerifyMessage(data, sizeof(data), buffer, usedSize));
   }
 }
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE_END()
 

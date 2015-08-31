@@ -33,6 +33,8 @@ namespace security {
 namespace transform {
 namespace tests {
 
+BOOST_AUTO_TEST_SUITE(Security)
+
 BOOST_AUTO_TEST_SUITE(TransformPublicKey)
 
 class RsaPublicKeyTestData
@@ -114,6 +116,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(SaveLoad, T, PublicKeyTestDataSets)
   BOOST_CHECK_EQUAL_COLLECTIONS(pKeyPkcs8, pKeyPkcs8 + pKeyPkcs8Len,
                                 os6.buf()->begin(), os6.buf()->end());
 }
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE_END()
 

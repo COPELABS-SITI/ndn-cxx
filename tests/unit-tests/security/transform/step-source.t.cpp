@@ -29,6 +29,8 @@ namespace security {
 namespace transform {
 namespace tests {
 
+BOOST_AUTO_TEST_SUITE(Security)
+
 BOOST_AUTO_TEST_SUITE(TransformStepSource)
 
 BOOST_AUTO_TEST_CASE(Basic)
@@ -68,6 +70,8 @@ BOOST_AUTO_TEST_CASE(Basic)
   std::string output = os.str();
   BOOST_CHECK_EQUAL(input, output);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE_END()
 
