@@ -38,6 +38,7 @@ public:
   /**
    * @brief Construst a source using @p is as input.
    *
+   * @param is The input stream.
    * @param bufLen The internal buffer size. The default size is 1024.
    * @pre bufLen must be larger than 0.
    */
