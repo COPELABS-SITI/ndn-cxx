@@ -37,6 +37,7 @@
 #include "boost-test.hpp"
 
 #include <boost/mpl/list.hpp>
+#include <set>
 
 
 namespace ndn {
@@ -242,6 +243,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(ImportExport, T, TestBackEnds)
 
   tpm.deleteKey(keyName);
   BOOST_CHECK_EQUAL(tpm.hasKey(keyName), false);
+}
+
+BOOST_AUTO_TEST_CASE(RandomKeyId)
+{
+  BackEndWrapperMem wrapper;
+  BackEnd& tpm = wrapper.getTpm();
+  Name identity("/Test/KeyName");
+
+  std::set<Name> keyNames;
+  for (int i = 0; i < 100; i++) {
+    auto key = tpm.createKey(identity, RsaKeyParams());
+    Name keyName = key->getKeyName();
+    tpm.deleteKey(keyName);
+    BOOST_CHECK(keyNames.insert(keyName).second);
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END() // TestBackEnd

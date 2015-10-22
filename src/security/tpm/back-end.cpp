@@ -122,6 +122,7 @@ BackEnd::setKeyName(KeyHandle& keyHandle, const Name& identity, const KeyParams&
     }
     case KeyIdType::RANDOM: {
       BOOST_ASSERT(!params.getKeyId().empty());
+      keyId = params.getKeyId();
       break;
     }
     default: {
