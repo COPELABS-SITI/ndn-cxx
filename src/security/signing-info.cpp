@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /**
- * Copyright (c) 2013-2015 Regents of the University of California.
+ * Copyright (c) 2013-2016 Regents of the University of California.
  *
  * This file is part of ndn-cxx library (NDN C++ library with eXperimental eXtensions).
  *
@@ -26,6 +26,7 @@ namespace security {
 
 const Name SigningInfo::EMPTY_NAME;
 const SignatureInfo SigningInfo::EMPTY_SIGNATURE_INFO;
+const Name SigningInfo::DIGEST_SHA256_IDENTITY("/localhost/identity/digest-sha256");
 
 SigningInfo::SigningInfo(SignerType signerType,
                          const Name& signerName,
@@ -34,6 +35,25 @@ SigningInfo::SigningInfo(SignerType signerType,
   , m_name(signerName)
   , m_digestAlgorithm(DigestAlgorithm::SHA256)
   , m_info(signatureInfo)
+{
+  BOOST_ASSERT(signerType == SIGNER_TYPE_NULL ||
+               signerType == SIGNER_TYPE_ID ||
+               signerType == SIGNER_TYPE_KEY ||
+               signerType == SIGNER_TYPE_CERT ||
+               signerType == SIGNER_TYPE_SHA256);
+}
+
+SigningInfo::SigningInfo(const Identity& identity)
+  : m_type(SIGNER_TYPE_PIB_ID)
+  , m_identity(identity)
+  , m_digestAlgorithm(DigestAlgorithm::SHA256)
+{
+}
+
+SigningInfo::SigningInfo(const Key& key)
+  : m_type(SIGNER_TYPE_PIB_KEY)
+  , m_key(key)
+  , m_digestAlgorithm(DigestAlgorithm::SHA256)
 {
 }
 
@@ -65,10 +85,26 @@ SigningInfo::setSha256Signing()
 }
 
 void
+SigningInfo::setPibIdentity(const Identity& identity)
+{
+  m_type = SIGNER_TYPE_PIB_ID;
+  m_name.clear();
+  m_identity = identity;
+}
+
+void
+SigningInfo::setPibKey(const Key& key)
+{
+  m_type = SIGNER_TYPE_PIB_KEY;
+  m_name.clear();
+  m_key = key;
+}
+
+void
 SigningInfo::setSignatureInfo(const SignatureInfo& signatureInfo)
 {
   m_info = signatureInfo;
 }
 
-} // namespace ndn
 } // namespace security
+} // namespace ndn

@@ -27,7 +27,9 @@
 namespace ndn {
 namespace security {
 
+namespace tmp {
 class KeyChain;
+} // namespace tmp
 
 namespace pib {
 
@@ -48,7 +50,9 @@ class IdentityImpl;
 class Identity
 {
 public:
-  friend class KeyChain;
+  friend class Pib;
+  friend class IdentityContainer;
+  friend class security::tmp::KeyChain;
 
 public:
   /**

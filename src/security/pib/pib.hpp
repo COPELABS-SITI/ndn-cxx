@@ -27,7 +27,9 @@
 namespace ndn {
 namespace security {
 
+namespace tmp {
 class KeyChain;
+} // namespace tmp
 
 namespace pib {
 
@@ -51,7 +53,7 @@ class PibImpl;
 class Pib : noncopyable
 {
 public:
-  friend class KeyChain;
+  friend class tmp::KeyChain;
 
 public:
   /// @brief represents a semantic error

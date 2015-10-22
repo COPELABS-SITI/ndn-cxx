@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /**
- * Copyright (c) 2013-2015 Regents of the University of California.
+ * Copyright (c) 2013-2016 Regents of the University of California.
  *
  * This file is part of ndn-cxx library (NDN C++ library with eXperimental eXtensions).
  *
@@ -31,6 +31,11 @@
 
 namespace ndn {
 namespace security {
+
+namespace tmp {
+class KeyChain;
+} // namespace tmp
+
 namespace tpm {
 
 class BackEnd;
@@ -54,7 +59,7 @@ class BackEnd;
 class Tpm : noncopyable
 {
 public:
-  friend class KeyChain;
+  friend class tmp::KeyChain;
 
   class Error : public std::runtime_error
   {

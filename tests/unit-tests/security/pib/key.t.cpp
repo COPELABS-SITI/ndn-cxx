@@ -44,7 +44,7 @@ BOOST_FIXTURE_TEST_CASE(ValidityChecking, PibDataFixture)
 {
   using security::pib::detail::KeyImpl;
 
-  // key
+  // an empty key
   Key key;
 
   BOOST_CHECK_EQUAL(static_cast<bool>(key), false);
@@ -55,6 +55,7 @@ BOOST_FIXTURE_TEST_CASE(ValidityChecking, PibDataFixture)
   else
     BOOST_CHECK(true);
 
+  // an initialized key
   auto pibImpl = make_shared<pib::PibMemory>();
   auto keyImpl = make_shared<KeyImpl>(id1Key1Name, id1Key1.buf(), id1Key1.size(), pibImpl);
   key = Key(keyImpl);

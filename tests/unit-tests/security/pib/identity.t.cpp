@@ -42,7 +42,7 @@ BOOST_FIXTURE_TEST_CASE(ValidityChecking, PibDataFixture)
 {
   using security::pib::detail::IdentityImpl;
 
-  // identity
+  // an empty identity
   Identity id;
 
   BOOST_CHECK_EQUAL(static_cast<bool>(id), false);
@@ -53,6 +53,7 @@ BOOST_FIXTURE_TEST_CASE(ValidityChecking, PibDataFixture)
   else
     BOOST_CHECK(true);
 
+  // an initialized identity
   auto pibImpl = make_shared<PibMemory>();
   auto identityImpl = make_shared<IdentityImpl>(id1, pibImpl, true);
   id = Identity(identityImpl);

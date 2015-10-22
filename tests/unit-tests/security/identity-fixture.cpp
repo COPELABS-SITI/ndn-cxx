@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /**
- * Copyright (c) 2013-2015 Regents of the University of California.
+ * Copyright (c) 2013-2016 Regents of the University of California.
  *
  * This file is part of ndn-cxx library (NDN C++ library with eXperimental eXtensions).
  *
@@ -87,10 +87,20 @@ public:
 
     boost::filesystem::remove(pibPath);
 
+    path pibPath2(absolute(std::getenv("HOME")));
+    pibPath2 /= ".ndn/pib.db";
+
+    boost::filesystem::remove(pibPath2);
+
     path tpmPath(absolute(std::getenv("HOME")));
     tpmPath /= ".ndn/ndnsec-tpm-file";
 
     boost::filesystem::remove_all(tpmPath);
+
+    path tpmPath2(absolute(std::getenv("HOME")));
+    tpmPath2 /= ".ndn/ndnsec-key-file";
+
+    boost::filesystem::remove_all(tpmPath2);
 
     if (!m_HOME.empty())
       setenv("HOME", m_HOME.c_str(), 1);

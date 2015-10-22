@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /**
- * Copyright (c) 2013-2015 Regents of the University of California.
+ * Copyright (c) 2013-2016 Regents of the University of California.
  *
  * This file is part of ndn-cxx library (NDN C++ library with eXperimental eXtensions).
  *
@@ -24,6 +24,8 @@
 
 #include "../name.hpp"
 #include "../signature-info.hpp"
+#include "pib/identity.hpp"
+#include "pib/key.hpp"
 #include "security-common.hpp"
 
 
@@ -32,6 +34,9 @@ namespace security {
 
 /**
  * @brief Signing parameters passed to KeyChain
+ *
+ * A SigningInfo is invalid if the specified identity/key/certificate does not exist,
+ * or the PIB Identity or Key instance is not valid.
  */
 class SigningInfo
 {
@@ -56,7 +61,11 @@ public:
     /// @brief signer is a certificate, use it directly
     SIGNER_TYPE_CERT = 3,
     /// @brief use sha256 digest, no signer needs to be specified
-    SIGNER_TYPE_SHA256 = 4
+    SIGNER_TYPE_SHA256 = 4,
+    /// @brief given PIB identity handle, use its default key and default certificate
+    SIGNER_TYPE_PIB_ID = 101, // internal use only
+    /// @brief given PIB key handle, use its default certificate
+    SIGNER_TYPE_PIB_KEY = 102 // internal use only
   };
 
 public:
@@ -73,6 +82,18 @@ public:
   SigningInfo(SignerType signerType = SIGNER_TYPE_NULL,
               const Name& signerName = EMPTY_NAME,
               const SignatureInfo& signatureInfo = EMPTY_SIGNATURE_INFO);
+
+  /**
+   * @brief Create a signingInfo using pib identity;
+   */
+  explicit
+  SigningInfo(const Identity& identity);
+
+  /**
+   * @brief Create a signingInfo using pib key;
+   */
+  explicit
+  SigningInfo(const Key& key);
 
   /**
    * @brief Set signer as an identity with name @p identity
@@ -103,6 +124,20 @@ public:
   setSha256Signing();
 
   /**
+   * @brief Set signer as a PIB identity handler @p identity
+   * @post Change the signerType to SIGNER_TYPE_PIB_ID
+   */
+  void
+  setPibIdentity(const Identity& identity);
+
+  /**
+   * @brief Set signer as a PIB key handler @p key
+   * @post Change the signerType to SIGNER_TYPE_PIB_KEY
+   */
+  void
+  setPibKey(const Key& key);
+
+  /**
    * @return Type of the signer
    */
   SignerType
@@ -118,6 +153,28 @@ public:
   getSignerName() const
   {
     return m_name;
+  }
+
+  /**
+   * @pre signerType must be SIGNER_TYPE_PIB_ID
+   * @return the identity handler of signer
+   */
+  const Identity&
+  getPibIdentity() const
+  {
+    BOOST_ASSERT(m_type == SIGNER_TYPE_PIB_ID);
+    return m_identity;
+  }
+
+  /**
+   * @pre signerType must be SIGNER_TYPE_PIB_KEY
+   * @return the key handler of signer
+   */
+  const Key&
+  getPibKey() const
+  {
+    BOOST_ASSERT(m_type == SIGNER_TYPE_PIB_KEY);
+    return m_key;
   }
 
   /**
@@ -157,9 +214,18 @@ public:
   static const Name EMPTY_NAME;
   static const SignatureInfo EMPTY_SIGNATURE_INFO;
 
+  /**
+   * @brief A localhost identity which indicates that signature is generated using SHA-256.
+   * @todo Passing this as identity is not implemented.
+   */
+  static const Name DIGEST_SHA256_IDENTITY;
+
 private:
   SignerType m_type;
   Name m_name;
+
+  Identity m_identity;
+  Key m_key;
 
   DigestAlgorithm m_digestAlgorithm;
 
