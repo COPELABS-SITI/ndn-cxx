@@ -48,7 +48,7 @@ public:
   };
 
 public:
-  /** @brief Set validity period (UNIX epoch, UNIX epoch) that is always invalid
+  /** @brief Set validity period [UNIX epoch, UNIX epoch] that is always invalid
    */
   ValidityPeriod() = default;
 
@@ -70,7 +70,7 @@ public:
 
   /** @brief Check if @p now falls within the validity period
    *  @param now Time point to check if it falls within the period
-   *  @return periodBegin < @p now and @p now < periodEnd
+   *  @return periodBegin <= @p now and @p now <= periodEnd
    */
   bool
   isValid(const time::system_clock::TimePoint& now = time::system_clock::now()) const;

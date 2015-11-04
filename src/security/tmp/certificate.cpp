@@ -33,8 +33,11 @@ BOOST_CONCEPT_ASSERT((WireEncodable<Certificate>));
 BOOST_CONCEPT_ASSERT((WireDecodable<Certificate>));
 
 const ssize_t Certificate::VERSION_OFFSET = -1;
-const ssize_t Certificate::KEY_COMPONENT_OFFSET = -2;
-const ssize_t Certificate::KEY_ID_OFFSET = -3;
+const ssize_t Certificate::ISSUER_ID_OFFSET = -2;
+const ssize_t Certificate::KEY_COMPONENT_OFFSET = -3;
+const ssize_t Certificate::KEY_ID_OFFSET = -4;
+const size_t Certificate::MIN_CERT_NAME_LENGTH = 4;
+const size_t Certificate::MIN_KEY_NAME_LENGTH = 2;
 const name::Component Certificate::KEY_COMPONENT("KEY");
 
 Certificate::Certificate()
@@ -45,29 +48,29 @@ Certificate::Certificate()
 Certificate::Certificate(Data&& data)
   : Data(data)
 {
-  if (getName().at(KEY_COMPONENT_OFFSET) != KEY_COMPONENT) {
+  if (!isCertName(getName())) {
     BOOST_THROW_EXCEPTION(Data::Error("Name does not follow certificate format naming convention"));
   }
   if (getContentType() != tlv::ContentTypeValue::ContentType_Key) {
-    BOOST_THROW_EXCEPTION(Data::Error("Type of content in block is not a key type"));
+    BOOST_THROW_EXCEPTION(Data::Error("ContentType is not KEY"));
   }
 }
 
 Certificate::Certificate(const Block& block)
   : Data(block)
 {
-  if (getName().at(KEY_COMPONENT_OFFSET) != KEY_COMPONENT) {
+  if (!isCertName(getName())) {
     BOOST_THROW_EXCEPTION(Data::Error("Name does not follow certificate format naming convention"));
   }
   if (getContentType() != tlv::ContentTypeValue::ContentType_Key) {
-    BOOST_THROW_EXCEPTION(Data::Error("Type of content in block is not a key type"));
+    BOOST_THROW_EXCEPTION(Data::Error("ContentType is not KEY"));
   }
 }
 
 Name
 Certificate::getKeyName() const
 {
-  return getName().getPrefix(VERSION_OFFSET);
+  return getName().getPrefix(KEY_COMPONENT_OFFSET + 1);
 }
 
 Name
@@ -80,6 +83,12 @@ name::Component
 Certificate::getKeyId() const
 {
   return getName().get(KEY_ID_OFFSET);
+}
+
+name::Component
+Certificate::getIssuerId() const
+{
+  return getName().get(ISSUER_ID_OFFSET);
 }
 
 const Buffer
@@ -113,30 +122,33 @@ Certificate::getExtension(uint32_t type) const
 bool
 isCertName(const Name& certName)
 {
-  return (certName.size() > 3 &&
-          certName.get(tmp::Certificate::KEY_COMPONENT_OFFSET) == tmp::Certificate::KEY_COMPONENT); // "/.../[key-id]/KEY/[version]"
+  // [subject-name]/[key-id]/KEY/[issuer-id]/[version]
+  return (certName.size() > tmp::Certificate::MIN_CERT_NAME_LENGTH &&
+          certName.get(tmp::Certificate::KEY_COMPONENT_OFFSET) == tmp::Certificate::KEY_COMPONENT);
 }
 
 bool
 isKeyName(const Name& keyName)
 {
-  return (keyName.size() > 2 && keyName.get(-1) == tmp::Certificate::KEY_COMPONENT); // "/.../[key-id]/KEY"
+  // [subject-name]/[key-id]/KEY
+  return (keyName.size() > tmp::Certificate::MIN_KEY_NAME_LENGTH &&
+          keyName.get(-1) == tmp::Certificate::KEY_COMPONENT);
 }
 
 Name
 toKeyName(const Name& certName)
 {
   if (!isCertName(certName))
-    BOOST_THROW_EXCEPTION(std::runtime_error("wrong cert name"));
+    BOOST_THROW_EXCEPTION(std::invalid_argument("wrong cert name"));
 
-  return certName.getPrefix(tmp::Certificate::VERSION_OFFSET); // trim version
+  return certName.getPrefix(tmp::Certificate::KEY_COMPONENT_OFFSET + 1); // trim issuer-id and version
 }
 
 std::tuple<Name, name::Component>
 parseKeyName(const Name& keyName)
 {
   if (!isKeyName(keyName))
-    BOOST_THROW_EXCEPTION(std::runtime_error("wrong key name"));
+    BOOST_THROW_EXCEPTION(std::invalid_argument("wrong key name"));
 
   // parse identity & key-id from "/.../[key-id]/KEY"
   return std::make_tuple(keyName.getPrefix(-2), keyName.get(-2));

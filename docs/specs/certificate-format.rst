@@ -100,8 +100,8 @@ certificate include more optional fields.
 One optional field is ``ValidityPeriod``, which contains two sub TLV fields:
 ``NotBefore`` and ``NotAfter``, which are two UTC timestamps in ISO 8601 compact
 format (``yyyymmddTHHMMSS``, e.g., "20020131T235959").  NotBefore indicates
-when the certificate takes effect while NotAfter indicates when the certificate
-expires.
+when the certificate takes effect while NotAfter indicates after when the
+certificate expires.
 
 .. note::
     Using ISO style string is the convention of specifying validity period of

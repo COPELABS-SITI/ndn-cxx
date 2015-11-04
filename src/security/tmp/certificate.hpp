@@ -38,22 +38,41 @@ class Certificate : public Data
 public:
   Certificate();
 
+  /**
+   * @brief Construct certificate from a data object
+   * @throw tlv::Error if data does not follow certificate format
+   */
   explicit
   Certificate(Data&& data);
 
+  /**
+   * @brief Construct certificate from a wire encoding
+   * @throw tlv::Error if wire encoding is invalid or does not follow certificate format
+   */
   explicit
   Certificate(const Block& block);
 
-  /// @brief Get key name (key name is certificate name without version component)
+  /**
+   * @brief Get key name
+   *
+   * Key name is the prefix of certificate name up to and including the 'KEY' component.
+   */
   Name
   getKeyName() const;
 
-  /// @brief Get identity name (identity name is key name without 'KEY' and keyId components)
+  /**
+   * @brief Get identity name
+   *
+   * Identity name is the prefix of certificate name before the keyId component.
+   */
   Name
   getIdentity() const;
 
   name::Component
   getKeyId() const;
+
+  name::Component
+  getIssuerId() const;
 
   /// @brief Get public key bits (in PKCS#8 format)
   const Buffer
@@ -76,8 +95,11 @@ public:
 
 public:
   static const ssize_t VERSION_OFFSET;
+  static const ssize_t ISSUER_ID_OFFSET;
   static const ssize_t KEY_COMPONENT_OFFSET;
   static const ssize_t KEY_ID_OFFSET;
+  static const size_t MIN_CERT_NAME_LENGTH;
+  static const size_t MIN_KEY_NAME_LENGTH;
   static const name::Component KEY_COMPONENT;
 };
 
@@ -89,9 +111,18 @@ isCertName(const Name& certName);
 bool
 isKeyName(const Name& keyName);
 
+/**
+ * @brief Extract key name from @p certName
+ * @throw std::invalid_argument if @p certName does not follow certificate naming convention.
+ */
 Name
 toKeyName(const Name& certName);
 
+/**
+ * @brief Extract identity name and keyId from @p keyName
+ * @return (identity name, key Id)
+ * @throw std::invalid_argument if @p keyName does not follow key naming convention.
+ */
 std::tuple<Name, name::Component>
 parseKeyName(const Name& keyName);
 

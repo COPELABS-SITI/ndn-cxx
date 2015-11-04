@@ -144,7 +144,7 @@ ValidityPeriod::getPeriod() const
 bool
 ValidityPeriod::isValid(const time::system_clock::TimePoint& now) const
 {
-  return m_notBefore < now && now < m_notAfter;
+  return m_notBefore <= now && now <= m_notAfter;
 }
 
 bool
