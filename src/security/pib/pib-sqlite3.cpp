@@ -354,15 +354,12 @@ void
 PibSqlite3::addKey(const Name& identity, const Name& keyName,
                    const uint8_t* key, size_t keyLen)
 {
-  if (hasKey(keyName)) {
-    return;
-  }
-
   // ensure identity exists
-  addIdentity(identity);
+  if (!hasIdentity(identity))
+    addIdentity(identity);
 
   Sqlite3Statement statement(m_database,
-                             "INSERT INTO keys (identity_id, key_name, key_bits) "
+                             "INSERT OR REPLACE INTO keys (identity_id, key_name, key_bits) "
                              "VALUES ((SELECT id FROM identities WHERE identity=?), ?, ?)");
   statement.bind(1, identity.wireEncode(), SQLITE_TRANSIENT);
   statement.bind(2, keyName.wireEncode(), SQLITE_TRANSIENT);
@@ -453,10 +450,11 @@ PibSqlite3::addCertificate(const Certificate& certificate)
 {
   // ensure key exists
   const Block& content = certificate.getContent();
-  addKey(certificate.getIdentity(), certificate.getKeyName(), content.value(), content.value_size());
+  if (!hasKey(certificate.getKeyName()))
+    addKey(certificate.getIdentity(), certificate.getKeyName(), content.value(), content.value_size());
 
   Sqlite3Statement statement(m_database,
-                             "INSERT INTO certificates "
+                             "INSERT OR REPLACE INTO certificates "
                              "(key_id, certificate_name, certificate_data) "
                              "VALUES ((SELECT id FROM keys WHERE key_name=?), ?, ?)");
   statement.bind(1, certificate.getKeyName().wireEncode(), SQLITE_TRANSIENT);

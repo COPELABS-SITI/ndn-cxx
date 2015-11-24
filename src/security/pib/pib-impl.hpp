@@ -153,7 +153,7 @@ public: // Key management
   /**
    * @brief Add a key.
    *
-   * If the key already exists, do nothing.
+   * If a key with the same name already exists, overwrite the key.
    * If the identity does not exist, add the identity as well.
    * If no default key of the identity has been set, set the added one as default
    * key of the identity.
@@ -226,9 +226,9 @@ public: // Certificate Management
   /**
    * @brief Add a certificate.
    *
-   * If the certificate already exists, do nothing.
-   * If the key or identity do not exist, add them as well.
-   * If no default certificate of the key has been set, set the added one as
+   * If a certificate with the same name (without implicit digest) already exists,
+   * overwrite the certificate.  If the key or identity do not exist, add them as
+   * well.  If no default certificate of the key has been set, set the added one as
    * default certificate of the key.
    *
    * @param certificate The certificate to add.

@@ -230,6 +230,55 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(CertificateManagement, T, PibImpls, PibDataFixt
   BOOST_CHECK_EQUAL(certNames.size(), 0);
 }
 
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(Overwrite, T, PibImpls, PibDataFixture)
+{
+  T wrapper;
+  PibImpl& pibImpl = wrapper.impl;
+
+  // check id1Key1, should not exist
+  pibImpl.removeIdentity(id1);
+  BOOST_CHECK_EQUAL(pibImpl.hasKey(id1Key1Name), false);
+
+  // add id1Key1
+  pibImpl.addKey(id1, id1Key1Name, id1Key1.buf(), id1Key1.size());
+  BOOST_CHECK_EQUAL(pibImpl.hasKey(id1Key1Name), true);
+  const Buffer& keyBits = pibImpl.getKeyBits(id1Key1Name);
+  BOOST_CHECK_EQUAL_COLLECTIONS(keyBits.begin(), keyBits.end(), id1Key1.begin(), id1Key1.end());
+
+  // check overwrite, add a key with the same name.
+  pibImpl.addKey(id1, id1Key1Name, id1Key2.buf(), id1Key2.size());
+  const Buffer& keyBits2 = pibImpl.getKeyBits(id1Key1Name);
+  BOOST_CHECK_EQUAL_COLLECTIONS(keyBits2.begin(), keyBits2.end(), id1Key2.begin(), id1Key2.end());
+
+  // check id1Key1Cert1, should not exist
+  pibImpl.removeIdentity(id1);
+  BOOST_CHECK_EQUAL(pibImpl.hasCertificate(id1Key1Cert1.getName()), false);
+
+  // add id1Key1Cert1
+  pibImpl.addCertificate(id1Key1Cert1);
+  BOOST_CHECK_EQUAL(pibImpl.hasCertificate(id1Key1Cert1.getName()), true);
+  const Certificate& cert = pibImpl.getCertificate(id1Key1Cert1.getName());
+  BOOST_CHECK_EQUAL_COLLECTIONS(cert.wireEncode().wire(),
+                                cert.wireEncode().wire() + cert.wireEncode().size(),
+                                id1Key1Cert1.wireEncode().wire(),
+                                id1Key1Cert1.wireEncode().wire() + id1Key1Cert1.wireEncode().size());
+
+  // check overwrite, create a cert with the same name.
+  auto cert2 = id1Key2Cert1;
+  cert2.setName(id1Key1Cert1.getName());
+  cert2.wireEncode();
+  pibImpl.addCertificate(cert2);
+  const Certificate& cert3 = pibImpl.getCertificate(id1Key1Cert1.getName());
+  BOOST_CHECK_EQUAL_COLLECTIONS(cert3.wireEncode().wire(),
+                                cert3.wireEncode().wire() + cert3.wireEncode().size(),
+                                cert2.wireEncode().wire(),
+                                cert2.wireEncode().wire() + cert2.wireEncode().size());
+
+  // only certificate is overwritten, key does not change.
+  const Buffer& keyBits3 = pibImpl.getKeyBits(id1Key1Name);
+  BOOST_CHECK_EQUAL_COLLECTIONS(keyBits3.begin(), keyBits3.end(), id1Key1.begin(), id1Key1.end());
+}
+
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(TpmLocator, T, PibImpls, PibDataFixture)
 {
   T wrapper;

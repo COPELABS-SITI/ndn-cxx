@@ -130,7 +130,8 @@ void
 PibMemory::addKey(const Name& identity, const Name& keyName,
                   const uint8_t* key, size_t keyLen)
 {
-  this->addIdentity(identity);
+  if (!hasIdentity(identity))
+    this->addIdentity(identity);
 
   m_keys[keyName] = Buffer(key, keyLen);
 
@@ -209,7 +210,10 @@ PibMemory::addCertificate(const Certificate& certificate)
   name::Component keyId;
   std::tie(identity, keyId) = parseKeyName(keyName);
 
-  this->addKey(identity, keyName, certificate.getContent().value(), certificate.getContent().value_size());
+  if (!hasKey(keyName))
+    this->addKey(identity, keyName,
+                 certificate.getContent().value(),
+                 certificate.getContent().value_size());
 
   m_certs[certName] = certificate;
   if (m_defaultCert.find(keyName) == m_defaultCert.end())
