@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /**
- * Copyright (c) 2013-2015 Regents of the University of California.
+ * Copyright (c) 2013-2016 Regents of the University of California.
  *
  * This file is part of ndn-cxx library (NDN C++ library with eXperimental eXtensions).
  *
@@ -20,144 +20,65 @@
  */
 
 #include "identity.hpp"
-#include "pib-impl.hpp"
-#include "pib.hpp"
-#include "../transform.hpp"
-#include "../../encoding/buffer-stream.hpp"
+#include "detail/identity-impl.hpp"
 
 namespace ndn {
 namespace security {
 namespace pib {
 
-static void
-keyNameCheck(const Name& identity, const Name& keyName)
+Identity::Identity() = default;
+
+Identity::Identity(weak_ptr<detail::IdentityImpl> impl)
+  : m_impl(impl)
 {
-  Name id;
-  name::Component keyId;
-  std::tie(id, keyId) = parseKeyName(keyName);
-
-  if (id != identity)
-    BOOST_THROW_EXCEPTION(Pib::Error("Identity name does not match key name"));
-}
-
-Identity::Identity()
-  : m_hasDefaultKey(false)
-  , m_needRefreshKeys(false)
-  , m_impl(nullptr)
-{
-}
-
-Identity::Identity(const Name& identityName, shared_ptr<PibImpl> impl, bool needInit)
-  : m_name(identityName)
-  , m_hasDefaultKey(false)
-  , m_needRefreshKeys(true)
-  , m_impl(impl)
-{
-  validityCheck();
-
-  if (needInit)
-    m_impl->addIdentity(m_name);
-  else if (!m_impl->hasIdentity(m_name))
-    BOOST_THROW_EXCEPTION(Pib::Error("Identity: " + m_name.toUri() + " does not exist"));
 }
 
 const Name&
 Identity::getName() const
 {
-  validityCheck();
-
-  return m_name;
+  return lock()->getName();
 }
 
 Key
 Identity::addKey(const uint8_t* key, size_t keyLen, const Name& keyName)
 {
-  validityCheck();
-
-  keyNameCheck(m_name, keyName);
-
-  if (!m_needRefreshKeys && m_keys.find(keyName) == m_keys.end()) {
-    // if we have already loaded all the keys, but the new key is not one of them
-    // the KeyContainer should be refreshed
-    m_needRefreshKeys = true;
-  }
-
-  return Key(keyName, key, keyLen, m_impl);
+  return lock()->addKey(key, keyLen, keyName);
 }
 
 void
 Identity::removeKey(const Name& keyName)
 {
-  validityCheck();
-
-  keyNameCheck(m_name, keyName);
-
-  if (m_hasDefaultKey && m_defaultKey.getName() == keyName)
-    m_hasDefaultKey = false;
-
-  m_impl->removeKey(keyName);
-  m_needRefreshKeys = true;
+  return lock()->removeKey(keyName);
 }
 
 Key
 Identity::getKey(const Name& keyName) const
 {
-  validityCheck();
-
-  keyNameCheck(m_name, keyName);
-
-  return Key(keyName, m_impl);
+  return lock()->getKey(keyName);
 }
 
 const KeyContainer&
 Identity::getKeys() const
 {
-  validityCheck();
-
-  if (m_needRefreshKeys) {
-    m_keys = KeyContainer(m_name, m_impl->getKeysOfIdentity(m_name), m_impl);
-    m_needRefreshKeys = false;
-  }
-
-  return m_keys;
+  return lock()->getKeys();
 }
 
-Key&
+const Key&
 Identity::setDefaultKey(const Name& keyName)
 {
-  validityCheck();
-
-  keyNameCheck(m_name, keyName);
-
-  m_defaultKey = Key(keyName, m_impl);
-  m_hasDefaultKey = true;
-
-  m_impl->setDefaultKeyOfIdentity(m_name, keyName);
-  return m_defaultKey;
+  return lock()->setDefaultKey(keyName);
 }
 
-Key&
+const Key&
 Identity::setDefaultKey(const uint8_t* key, size_t keyLen, const Name& keyName)
 {
-  validityCheck();
-
-  keyNameCheck(m_name, keyName);
-
-  addKey(key, keyLen, keyName);
-  return setDefaultKey(keyName);
+  return lock()->setDefaultKey(key, keyLen, keyName);
 }
 
-Key&
+const Key&
 Identity::getDefaultKey() const
 {
-  validityCheck();
-
-  if (!m_hasDefaultKey) {
-    m_defaultKey = Key(m_impl->getDefaultKeyOfIdentity(m_name), m_impl);
-    m_hasDefaultKey = true;
-  }
-
-  return m_defaultKey;
+  return lock()->getDefaultKey();
 }
 
 Identity::operator bool() const
@@ -168,14 +89,18 @@ Identity::operator bool() const
 bool
 Identity::operator!() const
 {
-  return (m_impl == nullptr);
+  return m_impl.expired();
 }
 
-void
-Identity::validityCheck() const
+shared_ptr<detail::IdentityImpl>
+Identity::lock() const
 {
-  if (m_impl == nullptr)
+  auto impl = m_impl.lock();
+
+  if (impl == nullptr)
     BOOST_THROW_EXCEPTION(std::domain_error("Invalid Identity instance"));
+
+  return impl;
 }
 
 } // namespace pib

@@ -19,115 +19,95 @@
  * See AUTHORS.md for complete list of ndn-cxx authors and contributors.
  */
 
-#ifndef NDN_SECURITY_PIB_KEY_HPP
-#define NDN_SECURITY_PIB_KEY_HPP
+#ifndef NDN_SECURITY_PIB_DETAIL_KEY_IMPL_HPP
+#define NDN_SECURITY_PIB_DETAIL_KEY_IMPL_HPP
 
-#include "certificate-container.hpp"
-#include "../security-common.hpp"
+#include "../../../data.hpp"
+#include "../certificate-container.hpp"
+#include "../../security-common.hpp"
 
 namespace ndn {
 namespace security {
-
-class KeyChain;
-
 namespace pib {
 
+class PibImpl;
+
 namespace detail {
-class KeyImpl;
-} // namespace detail
 
 /**
- * @brief A frontend handle of a key instance
+ * @brief Backend instance of Key
  *
- * Key is at the second level in PIB's Identity-Key-Certificate hierarchy.
- * An Key has a Name (identity + keyId), and contains one or more certificates,
- * one of which is set as the default certificate of this key.  A certificate
- * can be directly accessed from a Key object.
+ * An Key has only one backend instance, but may have multiple frontend handles.
+ * Each frontend handle is associated with the only one backend KeyImpl.
  *
  * @throw PibImpl::Error when underlying implementation has non-semantic error.
  */
-class Key
+class KeyImpl : noncopyable
 {
 public:
-  friend class KeyChain;
-
-public:
   /**
-   * @brief Default Constructor
+   * @brief Create a KeyImpl with @p keyName.
    *
-   * Key created using this default constructor is just a place holder.
-   * It can obtain an actual instance from Identity::getKey(...).  A typical
-   * usage would be for exception handling:
+   * If the key does not exist in the backend, create it in backend.
    *
-   *   Key key;
-   *   try {
-   *     key = Identity.getKey(...);
-   *   }
-   *   catch (Pib::Error&) {
-   *     ...
-   *   }
-   *
-   * A Key instance created using the constructor is invalid. Calling a
-   * member method on an invalid Key instance may cause an std::domain_error.
+   * @param keyName The name of the key.
+   * @param key The public key to add.
+   * @param keyLen The length of the key.
+   * @param impl The actual Pib backend implementation.
+   * @throw Pib::Error if a key with the same @p keyName already exists.
    */
-  Key();
+  KeyImpl(const Name& keyName, const uint8_t* key, size_t keyLen, shared_ptr<PibImpl> impl);
 
   /**
-   * @brief Create a Key with a backend implementation @p impl.
+   * @brief Create a KeyImpl with @p keyName.
    *
-   * This method should only be used by KeyContainer.
+   * @param keyName The name of the key.
+   * @param impl The actual Pib backend implementation.
+   * @throw Pib::Error if the key does not exist.
    */
-  Key(weak_ptr<detail::KeyImpl> impl);
+  KeyImpl(const Name& keyName, shared_ptr<PibImpl> impl);
 
   /// @brief Get the name of the key.
   const Name&
-  getName() const;
+  getName() const
+  {
+    return m_keyName;
+  }
 
   /// @brief Get the name of the belonging identity.
   const Name&
-  getIdentity() const;
+  getIdentity() const
+  {
+    return m_id;
+  }
 
   /// @brief Get the key id of the key.
   const name::Component&
-  getKeyId() const;
+  getKeyId() const
+  {
+    return m_keyId;
+  }
 
   /// @brief Get key type
   KeyType
-  getKeyType() const;
+  getKeyType() const
+  {
+    return m_keyType;
+  }
 
   /// @brief Get public key bits
   const Buffer&
-  getPublicKey() const;
+  getPublicKey() const
+  {
+    return m_key;
+  }
 
-  /**
-   * @brief Get a certificate with @p certName
-   * @throw std::invalid_argument if @p certName does not match key name
-   * @throw Pib::Error if the certificate does not exist.
-   */
-  tmp::Certificate
-  getCertificate(const Name& certName) const;
-
-  /// @brief Get all the certificates for this key.
-  const CertificateContainer&
-  getCertificates() const;
-
-  /**
-   * @brief Get the default certificate for this Key.
-   * @throw Pib::Error if the default certificate does not exist.
-   */
-  const tmp::Certificate&
-  getDefaultCertificate() const;
-
-  /// @brief Check if the Key instance is valid
-  operator bool() const;
-
-  /// @brief Check if the Key instance is invalid
-  bool
-  operator!() const;
-
-NDN_CXX_PUBLIC_WITH_TESTS_ELSE_PRIVATE: // write operations should be private
   /**
    * @brief Add @p certificate.
+   *
+   * If no default certificate is set before, the new certificate will be set as the default
+   * certificate of the key.
+   *
    * @throw std::invalid_argument if certificate name does not match key name
    * @throw Pib::Error if a certificate with the same name already exists
    */
@@ -142,7 +122,19 @@ NDN_CXX_PUBLIC_WITH_TESTS_ELSE_PRIVATE: // write operations should be private
   removeCertificate(const Name& certName);
 
   /**
-   * @brief Set an existing certificate with @p certName as the default certificate
+   * @brief Get a certificate with @p certName
+   * @throw std::invalid_argument if @p certName does not match key name
+   * @throw Pib::Error if the certificate does not exist.
+   */
+  tmp::Certificate
+  getCertificate(const Name& certName) const;
+
+  /// @brief Get all the certificates for this key.
+  const CertificateContainer&
+  getCertificates() const;
+
+  /**
+   * @brief Set an existing one with @p certName as the default certificate
    * @throw std::invalid_argument if @p certName does not match key name
    * @throw Pib::Error if the certificate does not exist.
    * @return the default certificate
@@ -159,24 +151,31 @@ NDN_CXX_PUBLIC_WITH_TESTS_ELSE_PRIVATE: // write operations should be private
   const tmp::Certificate&
   setDefaultCertificate(const tmp::Certificate& certificate);
 
-private:
   /**
-   * @brief Check the validity of the instance
-   * @return a shared_ptr when the instance is valid
-   * @throw std::domain_error when the instance is invalid
+   * @brief Get the default certificate for this Key.
+   * @throw Pib::Error if the default certificate does not exist.
    */
-  shared_ptr<detail::KeyImpl>
-  lock() const;
+  const tmp::Certificate&
+  getDefaultCertificate() const;
 
 private:
-  weak_ptr<detail::KeyImpl> m_impl;
+  Name m_id;
+  name::Component m_keyId;
+  Name m_keyName;
+  Buffer m_key;
+  KeyType m_keyType;
+
+  mutable bool m_isDefaultCertificateLoaded;
+  mutable tmp::Certificate m_defaultCertificate;
+
+  CertificateContainer m_certificates;
+
+  shared_ptr<PibImpl> m_impl;
 };
 
+} // namespace detail
 } // namespace pib
-
-using pib::Key;
-
 } // namespace security
 } // namespace ndn
 
-#endif // NDN_SECURITY_PIB_KEY_HPP
+#endif // NDN_SECURITY_PIB_DETAIL_KEY_IMPL_HPP

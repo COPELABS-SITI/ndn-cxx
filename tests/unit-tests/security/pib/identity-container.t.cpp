@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /**
- * Copyright (c) 2013-2015 Regents of the University of California.
+ * Copyright (c) 2013-2016 Regents of the University of California.
  *
  * This file is part of ndn-cxx library (NDN C++ library with eXperimental eXtensions).
  *
@@ -31,20 +31,90 @@ namespace security {
 namespace pib {
 namespace tests {
 
-BOOST_AUTO_TEST_SUITE(SecurityIdentityContainer)
+BOOST_AUTO_TEST_SUITE(Security)
+BOOST_AUTO_TEST_SUITE(Pib)
+BOOST_AUTO_TEST_SUITE(TestIdentityContainer)
 
-BOOST_FIXTURE_TEST_CASE(TestIdentityContainer, PibDataFixture)
+using security::Pib;
+
+BOOST_FIXTURE_TEST_CASE(Basic, PibDataFixture)
 {
   auto pibImpl = make_shared<PibMemory>();
-  Pib pib("pib-memory", "", pibImpl);
 
-  Identity identity1 = pib.addIdentity(id1);
-  Identity identity2 = pib.addIdentity(id2);
+  // start with an empty container
+  IdentityContainer container(pibImpl);
+  BOOST_CHECK_EQUAL(container.size(), 0);
+  BOOST_CHECK_EQUAL(container.getLoadedIdentities().size(), 0);
 
-  IdentityContainer container = pib.getIdentities();
+  // add the first identity
+  Identity identity11 = container.add(id1);
+  BOOST_CHECK_EQUAL(identity11.getName(), id1);
+  BOOST_CHECK_EQUAL(container.size(), 1);
+  BOOST_CHECK_EQUAL(container.getLoadedIdentities().size(), 1);
+  BOOST_CHECK(container.find(id1) != container.end());
+
+  // add the same identity again
+  Identity identity12 = container.add(id1);
+  BOOST_CHECK_EQUAL(identity12.getName(), id1);
+  BOOST_CHECK_EQUAL(container.size(), 1);
+  BOOST_CHECK_EQUAL(container.getLoadedIdentities().size(), 1);
+  BOOST_CHECK(container.find(id1) != container.end());
+
+  // add the second identity
+  Identity identity21 = container.add(id2);
+  BOOST_CHECK_EQUAL(identity21.getName(), id2);
   BOOST_CHECK_EQUAL(container.size(), 2);
+  BOOST_CHECK_EQUAL(container.getLoadedIdentities().size(), 2);
   BOOST_CHECK(container.find(id1) != container.end());
   BOOST_CHECK(container.find(id2) != container.end());
+
+  // get identities
+  BOOST_REQUIRE_NO_THROW(container.get(id1));
+  BOOST_REQUIRE_NO_THROW(container.get(id2));
+  BOOST_CHECK_THROW(container.get(Name("/non-existing")), Pib::Error);
+
+  // check identity
+  Identity identity1 = container.get(id1);
+  Identity identity2 = container.get(id2);
+  BOOST_CHECK_EQUAL(identity1.getName(), id1);
+  BOOST_CHECK_EQUAL(identity2.getName(), id2);
+
+  // create another container from the same PibImpl
+  // cache should be empty
+  IdentityContainer container2(pibImpl);
+  BOOST_CHECK_EQUAL(container2.size(), 2);
+  BOOST_CHECK_EQUAL(container2.getLoadedIdentities().size(), 0);
+
+  // get key, cache should be filled
+  BOOST_REQUIRE_NO_THROW(container2.get(id1));
+  BOOST_CHECK_EQUAL(container2.size(), 2);
+  BOOST_CHECK_EQUAL(container2.getLoadedIdentities().size(), 1);
+
+  BOOST_REQUIRE_NO_THROW(container2.get(id2));
+  BOOST_CHECK_EQUAL(container2.size(), 2);
+  BOOST_CHECK_EQUAL(container2.getLoadedIdentities().size(), 2);
+
+  // remove a key
+  container2.remove(id1);
+  BOOST_CHECK_EQUAL(container2.size(), 1);
+  BOOST_CHECK_EQUAL(container2.getLoadedIdentities().size(), 1);
+  BOOST_CHECK(container2.find(id1) == container2.end());
+  BOOST_CHECK(container2.find(id2) != container2.end());
+
+  // remove another key
+  container2.remove(id2);
+  BOOST_CHECK_EQUAL(container2.size(), 0);
+  BOOST_CHECK_EQUAL(container2.getLoadedIdentities().size(), 0);
+  BOOST_CHECK(container2.find(id2) == container2.end());
+
+}
+
+BOOST_FIXTURE_TEST_CASE(Iterator, PibDataFixture)
+{
+  auto pibImpl = make_shared<PibMemory>();
+  IdentityContainer container(pibImpl);
+  container.add(id1);
+  container.add(id2);
 
   std::set<Name> idNames;
   idNames.insert(id1);
@@ -70,6 +140,8 @@ BOOST_FIXTURE_TEST_CASE(TestIdentityContainer, PibDataFixture)
   BOOST_CHECK_EQUAL(count, 2);
 }
 
+BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 
 } // namespace tests

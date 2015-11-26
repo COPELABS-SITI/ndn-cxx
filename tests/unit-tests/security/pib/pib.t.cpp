@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /**
- * Copyright (c) 2013-2015 Regents of the University of California.
+ * Copyright (c) 2013-2016 Regents of the University of California.
  *
  * This file is part of ndn-cxx library (NDN C++ library with eXperimental eXtensions).
  *
@@ -43,7 +43,7 @@ BOOST_FIXTURE_TEST_CASE(ValidityChecking, PibDataFixture)
 
   Identity id = pib.addIdentity(id1);
 
-  BOOST_CHECK_EQUAL(bool(id), true);
+  BOOST_CHECK_EQUAL(static_cast<bool>(id), true);
   BOOST_CHECK_EQUAL(!id, false);
 
   if (id)
@@ -54,7 +54,7 @@ BOOST_FIXTURE_TEST_CASE(ValidityChecking, PibDataFixture)
   // key
   Key key = id.addKey(id1Key1.buf(), id1Key1.size(), id1Key1Name);
 
-  BOOST_CHECK_EQUAL(bool(key), true);
+  BOOST_CHECK_EQUAL(static_cast<bool>(key), true);
   BOOST_CHECK_EQUAL(!key, false);
 
   if (key)
@@ -67,20 +67,46 @@ BOOST_FIXTURE_TEST_CASE(TestIdentityOperation, PibDataFixture)
 {
   auto pibImpl = make_shared<PibMemory>();
   Pib pib("pib-memory", "", pibImpl);
+  BOOST_CHECK_EQUAL(pib.getIdentities().size(), 0);
 
+  // get non-existing identity, throw Pib::Error
   BOOST_CHECK_THROW(pib.getIdentity(id1), Pib::Error);
-  Identity identity1 = pib.addIdentity(id1);
+  // get default identity when it is not set yet, throw Pib::Error
+  BOOST_CHECK_THROW(pib.getDefaultIdentity(), Pib::Error);
+
+  // add identity
+  pib.addIdentity(id1);
   BOOST_CHECK_NO_THROW(pib.getIdentity(id1));
+  BOOST_CHECK_EQUAL(pib.getIdentities().size(), 1);
+
+  // new key becomes default key when there is no default key
+  BOOST_REQUIRE_NO_THROW(pib.getDefaultIdentity());
+  BOOST_CHECK_EQUAL(pib.getDefaultIdentity().getName(), id1);
+
+  // remove identity
   pib.removeIdentity(id1);
   BOOST_CHECK_THROW(pib.getIdentity(id1), Pib::Error);
-
   BOOST_CHECK_THROW(pib.getDefaultIdentity(), Pib::Error);
+  BOOST_CHECK_EQUAL(pib.getIdentities().size(), 0);
+
+  // set default identity
   BOOST_REQUIRE_NO_THROW(pib.setDefaultIdentity(id1));
   BOOST_REQUIRE_NO_THROW(pib.getDefaultIdentity());
   BOOST_CHECK_EQUAL(pib.getDefaultIdentity().getName(), id1);
+  BOOST_CHECK_EQUAL(pib.getIdentities().size(), 1);
+  BOOST_REQUIRE_NO_THROW(pib.setDefaultIdentity(id2));
+  BOOST_REQUIRE_NO_THROW(pib.getDefaultIdentity());
+  BOOST_CHECK_EQUAL(pib.getDefaultIdentity().getName(), id2);
+  BOOST_CHECK_EQUAL(pib.getIdentities().size(), 2);
+
+  // remove default identity
+  pib.removeIdentity(id2);
+  BOOST_CHECK_THROW(pib.getIdentity(id2), Pib::Error);
+  BOOST_CHECK_THROW(pib.getDefaultIdentity(), Pib::Error);
+  BOOST_CHECK_EQUAL(pib.getIdentities().size(), 1);
   pib.removeIdentity(id1);
   BOOST_CHECK_THROW(pib.getIdentity(id1), Pib::Error);
-  BOOST_CHECK_THROW(pib.getDefaultIdentity(), Pib::Error);
+  BOOST_CHECK_EQUAL(pib.getIdentities().size(), 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END() // TestPib

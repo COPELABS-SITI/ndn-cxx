@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /**
- * Copyright (c) 2013-2015 Regents of the University of California.
+ * Copyright (c) 2013-2016 Regents of the University of California.
  *
  * This file is part of ndn-cxx library (NDN C++ library with eXperimental eXtensions).
  *
@@ -49,7 +49,7 @@ public:
    *
    * @param dir The directory where the database file is located. By default, it points to the
    *        $HOME/.ndn directory.
-   * @throws PibImpl::Error when initialization fails.
+   * @throw PibImpl::Error when initialization fails.
    */
   explicit
   PibSqlite3(const std::string& dir = "");

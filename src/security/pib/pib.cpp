@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /**
- * Copyright (c) 2013-2015 Regents of the University of California.
+ * Copyright (c) 2013-2016 Regents of the University of California.
  *
  * This file is part of ndn-cxx library (NDN C++ library with eXperimental eXtensions).
  *
@@ -26,18 +26,17 @@ namespace ndn {
 namespace security {
 namespace pib {
 
-Pib::Pib(const std::string scheme, const std::string& location, shared_ptr<PibImpl> impl)
+Pib::Pib(const std::string& scheme, const std::string& location, shared_ptr<PibImpl> impl)
   : m_scheme(scheme)
   , m_location(location)
-  , m_hasDefaultIdentity(false)
-  , m_needRefreshIdentities(true)
+  , m_isDefaultIdentityLoaded(false)
+  , m_identities(impl)
   , m_impl(impl)
 {
+  BOOST_ASSERT(impl != nullptr);
 }
 
-Pib::~Pib()
-{
-}
+Pib::~Pib() = default;
 
 std::string
 Pib::getPibLocator() const
@@ -61,66 +60,67 @@ void
 Pib::reset()
 {
   m_impl->reset();
-
-  m_hasDefaultIdentity = false;
-  m_needRefreshIdentities = true;
+  m_isDefaultIdentityLoaded = false;
 }
 
 Identity
 Pib::addIdentity(const Name& identity)
 {
-  if (!m_needRefreshIdentities && m_identities.find(identity) == m_identities.end()) {
-    // if we have already loaded all the identities, but the new identity is not one of them
-    // the IdentityContainer should be refreshed
-    m_needRefreshIdentities = true;
-  }
-  return Identity(identity, m_impl, true);
+  BOOST_ASSERT(m_identities.isConsistent());
+
+  return m_identities.add(identity);
 }
 
 void
 Pib::removeIdentity(const Name& identity)
 {
-  if (m_hasDefaultIdentity && m_defaultIdentity.getName() == identity)
-    m_hasDefaultIdentity = false;
+  BOOST_ASSERT(m_identities.isConsistent());
 
-  m_impl->removeIdentity(identity);
-  m_needRefreshIdentities = true;
+  if (m_isDefaultIdentityLoaded && m_defaultIdentity.getName() == identity)
+    m_isDefaultIdentityLoaded = false;
+
+  m_identities.remove(identity);
 }
 
 Identity
 Pib::getIdentity(const Name& identity) const
 {
-  return Identity(identity, m_impl, false);
+  BOOST_ASSERT(m_identities.isConsistent());
+
+  return m_identities.get(identity);
 }
 
 const IdentityContainer&
 Pib::getIdentities() const
 {
-  if (m_needRefreshIdentities) {
-    m_identities = IdentityContainer(m_impl->getIdentities(), m_impl);
-    m_needRefreshIdentities = false;
-  }
+  BOOST_ASSERT(m_identities.isConsistent());
 
   return m_identities;
 }
 
-Identity&
+const Identity&
 Pib::setDefaultIdentity(const Name& identityName)
 {
-  m_defaultIdentity = addIdentity(identityName);
-  m_hasDefaultIdentity = true;
+  BOOST_ASSERT(m_identities.isConsistent());
+
+  m_defaultIdentity = m_identities.add(identityName);
+  m_isDefaultIdentityLoaded = true;
 
   m_impl->setDefaultIdentity(identityName);
   return m_defaultIdentity;
 }
 
-Identity&
+const Identity&
 Pib::getDefaultIdentity() const
 {
-  if (!m_hasDefaultIdentity) {
-    m_defaultIdentity = Identity(m_impl->getDefaultIdentity(), m_impl, false);
-    m_hasDefaultIdentity = true;
+  BOOST_ASSERT(m_identities.isConsistent());
+
+  if (!m_isDefaultIdentityLoaded) {
+    m_defaultIdentity = m_identities.get(m_impl->getDefaultIdentity());
+    m_isDefaultIdentityLoaded = true;
   }
+
+  BOOST_ASSERT(m_impl->getDefaultIdentity() == m_defaultIdentity.getName());
 
   return m_defaultIdentity;
 }

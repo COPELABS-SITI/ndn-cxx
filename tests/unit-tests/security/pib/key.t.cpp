@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /**
- * Copyright (c) 2013-2015 Regents of the University of California.
+ * Copyright (c) 2013-2016 Regents of the University of California.
  *
  * This file is part of ndn-cxx library (NDN C++ library with eXperimental eXtensions).
  *
@@ -22,20 +22,28 @@
 #include "security/pib/key.hpp"
 #include "security/pib/pib.hpp"
 #include "security/pib/pib-memory.hpp"
+#include "security/pib/detail/key-impl.hpp"
 #include "pib-data-fixture.hpp"
 
 #include "boost-test.hpp"
 
 namespace ndn {
 namespace security {
+namespace pib {
 namespace tests {
 
 using tmp::Certificate;
 
-BOOST_AUTO_TEST_SUITE(SecurityKey)
+BOOST_AUTO_TEST_SUITE(Security)
+BOOST_AUTO_TEST_SUITE(Pib)
+BOOST_AUTO_TEST_SUITE(TestKey)
+
+using security::Pib;
 
 BOOST_FIXTURE_TEST_CASE(ValidityChecking, PibDataFixture)
 {
+  using security::pib::detail::KeyImpl;
+
   // key
   Key key;
 
@@ -48,7 +56,8 @@ BOOST_FIXTURE_TEST_CASE(ValidityChecking, PibDataFixture)
     BOOST_CHECK(true);
 
   auto pibImpl = make_shared<pib::PibMemory>();
-  key = Key(id1Key1Name, id1Key1.buf(), id1Key1.size(), pibImpl);
+  auto keyImpl = make_shared<KeyImpl>(id1Key1Name, id1Key1.buf(), id1Key1.size(), pibImpl);
+  key = Key(keyImpl);
 
   BOOST_CHECK_EQUAL(static_cast<bool>(key), true);
   BOOST_CHECK_EQUAL(!key, false);
@@ -59,37 +68,35 @@ BOOST_FIXTURE_TEST_CASE(ValidityChecking, PibDataFixture)
     BOOST_CHECK(false);
 }
 
-BOOST_FIXTURE_TEST_CASE(TestCertificateOperation, PibDataFixture)
+/**
+ * pib::Key is a wrapper of pib::detail::KeyImpl.  Since the functionalities of KeyImpl
+ * have already been tested in detail/key-impl.t.cpp, we only test the shared property
+ * of pib::Key in this test case.
+ */
+
+BOOST_FIXTURE_TEST_CASE(Share, PibDataFixture)
 {
+  using security::pib::detail::KeyImpl;
+
   auto pibImpl = make_shared<pib::PibMemory>();
+  auto keyImpl = make_shared<KeyImpl>(id1Key1Name, id1Key1.buf(), id1Key1.size(), pibImpl);
+  Key key1(keyImpl);
+  Key key2(keyImpl);
 
-  Key key11(id1Key1Name, id1Key1.buf(), id1Key1.size(), pibImpl);
+  key1.addCertificate(id1Key1Cert1);
+  BOOST_CHECK_NO_THROW(key2.getCertificate(id1Key1Cert1.getName()));
+  key2.removeCertificate(id1Key1Cert1.getName());
+  BOOST_CHECK_THROW(key1.getCertificate(id1Key1Cert1.getName()), Pib::Error);
 
-  BOOST_CHECK_THROW(key11.getCertificate(id1Key1Cert1.getName()), Pib::Error);
-  key11.addCertificate(id1Key1Cert1);
-  BOOST_CHECK_NO_THROW(key11.getCertificate(id1Key1Cert1.getName()));
-  key11.removeCertificate(id1Key1Cert1.getName());
-  BOOST_CHECK_THROW(key11.getCertificate(id1Key1Cert1.getName()), Pib::Error);
-
-  BOOST_CHECK_THROW(key11.getDefaultCertificate(), Pib::Error);
-  BOOST_REQUIRE_THROW(key11.setDefaultCertificate(id1Key1Cert1.getName()), Pib::Error);
-  BOOST_REQUIRE_NO_THROW(key11.setDefaultCertificate(id1Key1Cert1));
-  BOOST_REQUIRE_NO_THROW(key11.getDefaultCertificate());
-
-  const Certificate& defaultCert = key11.getDefaultCertificate();
-  BOOST_CHECK_EQUAL_COLLECTIONS(defaultCert.wireEncode().wire(),
-                                defaultCert.wireEncode().wire() + defaultCert.wireEncode().size(),
-                                id1Key1Cert1.wireEncode().wire(),
-                                id1Key1Cert1.wireEncode().wire() + id1Key1Cert1.wireEncode().size());
-
-  key11.removeCertificate(id1Key1Cert1.getName());
-  BOOST_CHECK_THROW(key11.getCertificate(id1Key1Cert1.getName()), Pib::Error);
-  BOOST_CHECK_THROW(key11.getDefaultCertificate(), Pib::Error);
+  key1.setDefaultCertificate(id1Key1Cert1);
+  BOOST_CHECK_NO_THROW(key2.getDefaultCertificate());
 }
 
-
+BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 
 } // namespace tests
+} // namespace pib
 } // namespace security
 } // namespace ndn

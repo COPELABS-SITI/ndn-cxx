@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /**
- * Copyright (c) 2013-2015 Regents of the University of California.
+ * Copyright (c) 2013-2016 Regents of the University of California.
  *
  * This file is part of ndn-cxx library (NDN C++ library with eXperimental eXtensions).
  *
@@ -31,22 +31,113 @@ namespace security {
 namespace pib {
 namespace tests {
 
-BOOST_AUTO_TEST_SUITE(SecurityKeyContainer)
+BOOST_AUTO_TEST_SUITE(Security)
+BOOST_AUTO_TEST_SUITE(Pib)
+BOOST_AUTO_TEST_SUITE(TestKeyContainer)
 
-BOOST_FIXTURE_TEST_CASE(TestKeyContainer, PibDataFixture)
+using security::Pib;
+
+BOOST_FIXTURE_TEST_CASE(Basic, PibDataFixture)
 {
   auto pibImpl = make_shared<PibMemory>();
-  Pib pib("pib-memory", "", pibImpl);
 
-  Identity identity1 = pib.addIdentity(id1);
+  // start with an empty container
+  KeyContainer container(id1, pibImpl);
+  BOOST_CHECK_EQUAL(container.size(), 0);
+  BOOST_CHECK_EQUAL(container.getLoadedKeys().size(), 0);
 
-  Key key11 = identity1.addKey(id1Key1.buf(), id1Key1.size(), id1Key1Name);
-  Key key12 = identity1.addKey(id1Key2.buf(), id1Key2.size(), id1Key2Name);
+  // add the first key
+  Key key11 = container.add(id1Key1.buf(), id1Key1.size(), id1Key1Name);
+  BOOST_CHECK_EQUAL(key11.getName(), id1Key1Name);
+  BOOST_CHECK_EQUAL_COLLECTIONS(key11.getPublicKey().begin(), key11.getPublicKey().end(),
+                                id1Key1.begin(), id1Key1.end());
+  BOOST_CHECK_EQUAL(container.size(), 1);
+  BOOST_CHECK_EQUAL(container.getLoadedKeys().size(), 1);
+  BOOST_CHECK(container.find(id1Key1Name) != container.end());
 
-  KeyContainer container = identity1.getKeys();
+  // add the same key again
+  Key key12 = container.add(id1Key1.buf(), id1Key1.size(), id1Key1Name);
+  BOOST_CHECK_EQUAL(key12.getName(), id1Key1Name);
+  BOOST_CHECK_EQUAL_COLLECTIONS(key12.getPublicKey().begin(), key12.getPublicKey().end(),
+                                id1Key1.begin(), id1Key1.end());
+  BOOST_CHECK_EQUAL(container.size(), 1);
+  BOOST_CHECK_EQUAL(container.getLoadedKeys().size(), 1);
+  BOOST_CHECK(container.find(id1Key1Name) != container.end());
+
+  // add the second key
+  Key key21 = container.add(id1Key2.buf(), id1Key2.size(), id1Key2Name);
+  BOOST_CHECK_EQUAL(key21.getName(), id1Key2Name);
+  BOOST_CHECK_EQUAL_COLLECTIONS(key21.getPublicKey().begin(), key21.getPublicKey().end(),
+                                id1Key2.begin(), id1Key2.end());
   BOOST_CHECK_EQUAL(container.size(), 2);
+  BOOST_CHECK_EQUAL(container.getLoadedKeys().size(), 2);
   BOOST_CHECK(container.find(id1Key1Name) != container.end());
   BOOST_CHECK(container.find(id1Key2Name) != container.end());
+
+  // get keys
+  BOOST_REQUIRE_NO_THROW(container.get(id1Key1Name));
+  BOOST_REQUIRE_NO_THROW(container.get(id1Key2Name));
+  Name id1Key3Name = id1;
+  id1Key3Name.append("key-id").append("KEY");
+  BOOST_CHECK_THROW(container.get(id1Key3Name), Pib::Error);
+
+  // check key
+  Key key1 = container.get(id1Key1Name);
+  Key key2 = container.get(id1Key2Name);
+  BOOST_CHECK_EQUAL(key1.getName(), id1Key1Name);
+  BOOST_CHECK_EQUAL_COLLECTIONS(key1.getPublicKey().begin(), key1.getPublicKey().end(),
+                                id1Key1.begin(), id1Key1.end());
+  BOOST_CHECK_EQUAL(key2.getName(), id1Key2Name);
+  BOOST_CHECK_EQUAL_COLLECTIONS(key2.getPublicKey().begin(), key2.getPublicKey().end(),
+                                id1Key2.begin(), id1Key2.end());
+
+  // create another container from the same PibImpl
+  // cache should be empty
+  KeyContainer container2(id1, pibImpl);
+  BOOST_CHECK_EQUAL(container2.size(), 2);
+  BOOST_CHECK_EQUAL(container2.getLoadedKeys().size(), 0);
+
+  // get key, cache should be filled
+  BOOST_REQUIRE_NO_THROW(container2.get(id1Key1Name));
+  BOOST_CHECK_EQUAL(container2.size(), 2);
+  BOOST_CHECK_EQUAL(container2.getLoadedKeys().size(), 1);
+
+  BOOST_REQUIRE_NO_THROW(container2.get(id1Key2Name));
+  BOOST_CHECK_EQUAL(container2.size(), 2);
+  BOOST_CHECK_EQUAL(container2.getLoadedKeys().size(), 2);
+
+  // remove a key
+  container2.remove(id1Key1Name);
+  BOOST_CHECK_EQUAL(container2.size(), 1);
+  BOOST_CHECK_EQUAL(container2.getLoadedKeys().size(), 1);
+  BOOST_CHECK(container2.find(id1Key1Name) == container2.end());
+  BOOST_CHECK(container2.find(id1Key2Name) != container2.end());
+
+  // remove another key
+  container2.remove(id1Key2Name);
+  BOOST_CHECK_EQUAL(container2.size(), 0);
+  BOOST_CHECK_EQUAL(container2.getLoadedKeys().size(), 0);
+  BOOST_CHECK(container2.find(id1Key2Name) == container2.end());
+}
+
+BOOST_FIXTURE_TEST_CASE(Errors, PibDataFixture)
+{
+  auto pibImpl = make_shared<PibMemory>();
+
+  KeyContainer container(id1, pibImpl);
+
+  BOOST_CHECK_THROW(container.add(id2Key1.buf(), id2Key1.size(), id2Key1Name), std::invalid_argument);
+  BOOST_CHECK_THROW(container.remove(id2Key1Name), std::invalid_argument);
+  BOOST_CHECK_THROW(container.get(id2Key1Name), std::invalid_argument);
+}
+
+BOOST_FIXTURE_TEST_CASE(Iterator, PibDataFixture)
+{
+  auto pibImpl = make_shared<PibMemory>();
+  KeyContainer container(id1, pibImpl);
+
+  container.add(id1Key1.buf(), id1Key1.size(), id1Key1Name);
+  container.add(id1Key2.buf(), id1Key2.size(), id1Key2Name);
 
   std::set<Name> keyNames;
   keyNames.insert(id1Key1Name);
@@ -73,6 +164,8 @@ BOOST_FIXTURE_TEST_CASE(TestKeyContainer, PibDataFixture)
   BOOST_CHECK_EQUAL(count, 2);
 }
 
+BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 
 } // namespace tests

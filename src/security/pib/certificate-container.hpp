@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /**
- * Copyright (c) 2013-2015 Regents of the University of California.
+ * Copyright (c) 2013-2016 Regents of the University of California.
  *
  * This file is part of ndn-cxx library (NDN C++ library with eXperimental eXtensions).
  *
@@ -23,6 +23,7 @@
 #define NDN_SECURITY_PIB_CERTIFICATE_CONTAINER_HPP
 
 #include <set>
+#include <unordered_map>
 #include "../tmp/certificate.hpp"
 
 namespace ndn {
@@ -31,8 +32,17 @@ namespace pib {
 
 class PibImpl;
 
-/// @brief A handler to search or enumerate certificates of a key.
-class CertificateContainer
+namespace detail {
+class KeyImpl;
+} // namespace detail
+
+/**
+ * @brief Container of certificates of a key
+ *
+ * The container is used to search/enumerate certificates of a key.
+ * The container can be created only by detail::KeyImpl.
+ */
+class CertificateContainer : noncopyable
 {
 public:
   class const_iterator
@@ -41,6 +51,10 @@ public:
     friend class CertificateContainer;
 
   public:
+    /**
+     * @brief Dereference the iterator
+     * @return The corresponding certificate
+     */
     tmp::Certificate
     operator*();
 
@@ -57,20 +71,17 @@ public:
     operator!=(const const_iterator& other);
 
   private:
-    const_iterator(std::set<Name>::const_iterator it, shared_ptr<PibImpl> impl);
+    const_iterator(std::set<Name>::const_iterator it, const CertificateContainer& container);
 
   private:
     std::set<Name>::const_iterator m_it;
-    shared_ptr<PibImpl> m_impl;
+    const CertificateContainer& m_container;
   };
 
   typedef const_iterator iterator;
+  friend class detail::KeyImpl;
 
 public:
-  CertificateContainer();
-
-  CertificateContainer(std::set<Name>&& certNames, shared_ptr<PibImpl> impl);
-
   const_iterator
   begin() const;
 
@@ -83,8 +94,61 @@ public:
   size_t
   size() const;
 
+  /**
+   * @brief Add @p certificate into the container
+   * @throw std::invalid_argument If the name of @p certificate does not match the key name
+   */
+  void
+  add(const tmp::Certificate& certificate);
+
+  /**
+   * @brief Remove a certificate with @p certName from the container
+   * @throw std::invalid_argument If @p certName does not match the key name
+   */
+  void
+  remove(const Name& certName);
+
+  /**
+   * @brief Get a certificate with @p certName from the container
+   * @throw std::invalid_argument If @p certName does not match the key name
+   * @throw Pib::Error if the certificate does not exist
+   */
+  tmp::Certificate
+  get(const Name& certName) const;
+
+  /**
+   * @brief Check if the container is consistent with the backend storage
+   *
+   * @note this method is heavyweight and should be used in debugging mode only.
+   */
+  bool
+  isConsistent() const;
+
+NDN_CXX_PUBLIC_WITH_TESTS_ELSE_PRIVATE:
+  /**
+   * @brief Create certificate container for a key with @p keyName
+   * @param impl The PIB backend implementation.
+   */
+  CertificateContainer(const Name& keyName, shared_ptr<PibImpl> impl);
+
+  const std::set<Name>&
+  getNameSet() const
+  {
+    return m_certNames;
+  }
+
+  const std::unordered_map<Name, tmp::Certificate>&
+  getCache() const
+  {
+    return m_certs;
+  }
+
 private:
+  Name m_keyName;
   std::set<Name> m_certNames;
+  /// @brief Cache of certificates that have been loaded.
+  mutable std::unordered_map<Name, tmp::Certificate> m_certs;
+
   shared_ptr<PibImpl> m_impl;
 };
 
