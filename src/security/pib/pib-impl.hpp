@@ -66,7 +66,7 @@ public: // TpmLocator management
   /**
    * @brief Set the corresponding TPM information to @p tpmLocator.
    *
-   * @param tmpLocator The name for the new tmpLocator
+   * @param tpmLocator The name for the new tmpLocator
    */
   virtual void
   setTpmLocator(const std::string& tpmLocator) = 0;

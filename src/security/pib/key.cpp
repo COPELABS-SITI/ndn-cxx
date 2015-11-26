@@ -168,8 +168,8 @@ Key::setDefaultCertificate(const Name& certName)
   return m_defaultCertificate;
 }
 
-const Certificate&
-Key::setDefaultCertificate(const Certificate& certificate)
+const tmp::Certificate&
+Key::setDefaultCertificate(const tmp::Certificate& certificate)
 {
   addCertificate(certificate);
   return setDefaultCertificate(certificate.getName());

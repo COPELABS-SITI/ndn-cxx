@@ -61,23 +61,12 @@ public:
 
 public: // TpmLocator management
 
-  /**
-   * @brief Set the corresponding TPM information to @p tpmLocator.
-   *
-   * @param tmpLocator The name for the new tmpLocator
-   */
   virtual void
   setTpmLocator(const std::string& tpmLocator) NDN_CXX_DECL_FINAL;
 
-  /**
-   * @brief Get TPM Locator
-   */
   virtual std::string
   getTpmLocator() const NDN_CXX_DECL_FINAL;
 
-  /**
-   * @brief Reset the database.
-   */
   virtual void
   reset() NDN_CXX_DECL_FINAL;
 

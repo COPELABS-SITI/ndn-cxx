@@ -64,10 +64,13 @@ public:
    * @brief Create a new object for a static trust anchor given data packet and group id
    *        |m_expireTime| would be set to maximum timepoint of system clock.
    *
+   * @param anchors   A container for all the trust anchors indexed by packet name.
+   *                  |m_anchors| will be its reference.
    * @param cert      Certificate packet, must not be nullptr
    * @param groupId   Certificate group id.
    */
-  TrustAnchorGroup(std::map<Name, shared_ptr<const Data>>& anchors, shared_ptr<const Data> cert,
+  TrustAnchorGroup(std::map<Name, shared_ptr<const Data>>& anchors,
+                   shared_ptr<const Data> cert,
                    const std::string& groupId);
 
   ~TrustAnchorGroup();
@@ -144,4 +147,3 @@ typedef shared_ptr<TrustAnchorGroup> TrustAnchorGroupPtr;
 } // namespace ndn
 
 #endif // NDN_SECURITY_DETAIL_TRUST_ANCHOR_GROUP_HPP
-
