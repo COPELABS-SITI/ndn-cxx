@@ -131,7 +131,8 @@ BOOST_AUTO_TEST_CASE(Construction)
   BOOST_CHECK_EQUAL(certificate1.getKeyId(), name::Component("ksk-1416425377094"));
   BOOST_CHECK_EQUAL(certificate1.getIssuerName(), Name("/ndn/site1/ksk-2516425377094/KEY"));
 
-  Certificate certificate2(std::move(Data(block)));
+  Data data(block);
+  Certificate certificate2(std::move(data));
 
   BOOST_CHECK_EQUAL(certificate2.getName(), Name("/ndn/site1/ksk-1416425377094/KEY/0123/%FD%00%00%01I%C9%8B"));
   BOOST_CHECK_EQUAL(certificate2.getKeyName(), Name("/ndn/site1/ksk-1416425377094/KEY"));
