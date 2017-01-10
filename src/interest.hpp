@@ -239,6 +239,20 @@ public: // Name and guiders
     return *this;
   }
 
+  const bool
+  isLongLived() const
+  {
+	  return m_isLongLived;
+  }
+
+  Interest&
+  setLongLived(bool lli)
+  {
+	  m_isLongLived = lli;
+	  m_wire.reset();
+	  return *this;
+  }
+
   /** @brief Check if Nonce set
    */
   bool
@@ -398,6 +412,7 @@ private:
   Selectors m_selectors;
   mutable Block m_nonce;
   time::milliseconds m_interestLifetime;
+  bool m_isLongLived = false;
 
   mutable Block m_link;
   mutable shared_ptr<Link> m_linkCached;

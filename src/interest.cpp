@@ -249,6 +249,10 @@ Interest::wireEncode(EncodingImpl<TAG>& encoder) const
                                                     getInterestLifetime().count());
     }
 
+  // LongLivedInterest
+  if (isLongLived())
+	  totalLength += prependEmptyBlock(encoder, tlv::LongLivedInterest);
+
   // Nonce
   getNonce(); // to ensure that Nonce is properly set
   totalLength += encoder.prependBlock(m_nonce);
@@ -330,6 +334,10 @@ Interest::wireDecode(const Block& wire)
   else {
     m_interestLifetime = DEFAULT_INTEREST_LIFETIME;
   }
+
+  // LongLivedInterest
+  val = m_wire.find(tlv::LongLivedInterest);
+  m_isLongLived = (val != m_wire.elements_end());
 
   // Link object
   m_linkCached.reset();
