@@ -88,6 +88,8 @@ enum {
   LinkDelegation = 31,
   SelectedDelegation = 32,
 
+  LongLivedInterest = 33,
+
   AppPrivateBlock1 = 128,
   AppPrivateBlock2 = 32767
 };

@@ -37,6 +37,7 @@ Selectors::Selectors()
   , m_maxSuffixComponents(-1)
   , m_childSelector(-1)
   , m_mustBeFresh(false)
+  , m_longLived(false)
 {
 }
 
@@ -69,8 +70,14 @@ Selectors::wireEncode(EncodingImpl<TAG>& encoder) const
   //                 Exclude?
   //                 ChildSelector?
   //                 MustBeFresh?
+  //                 LongLivedInterest?
 
   // (reverse encoding)
+
+  // LongLivedInterest
+  if (isLongLived()) {
+    totalLength += prependEmptyBlock(encoder, tlv::LongLivedInterest);
+  }
 
   // MustBeFresh
   if (getMustBeFresh()) {
@@ -177,6 +184,12 @@ Selectors::wireDecode(const Block& wire)
   if (val != m_wire.elements_end()) {
     m_mustBeFresh = true;
   }
+
+  // LongLivedInterest
+  val = m_wire.find(tlv::LongLivedInterest);
+  if (val != m_wire.elements_end()) {
+    m_longLived = true;
+  }
 }
 
 Selectors&
@@ -223,6 +236,14 @@ Selectors&
 Selectors::setMustBeFresh(bool mustBeFresh)
 {
   m_mustBeFresh = mustBeFresh;
+  m_wire.reset();
+  return *this;
+}
+
+Selectors&
+Selectors::setLongLived(bool longLived)
+{
+  m_longLived = longLived;
   m_wire.reset();
   return *this;
 }
