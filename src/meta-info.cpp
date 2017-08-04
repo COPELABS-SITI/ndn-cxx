@@ -34,6 +34,7 @@ static_assert(std::is_base_of<tlv::Error, MetaInfo::Error>::value,
 
 MetaInfo::MetaInfo()
   : m_type(tlv::ContentType_Blob)
+  , m_pushed(false)
   , m_freshnessPeriod(-1)
 {
 }
@@ -56,6 +57,14 @@ MetaInfo::setFreshnessPeriod(const time::milliseconds& freshnessPeriod)
 {
   m_wire.reset();
   m_freshnessPeriod = freshnessPeriod;
+  return *this;
+}
+
+MetaInfo&
+MetaInfo::setPushed(bool pushed)
+{
+  m_wire.reset();
+  m_pushed = pushed;
   return *this;
 }
 
@@ -155,6 +164,11 @@ MetaInfo::wireEncode(EncodingImpl<TAG>& encoder) const
                                                     m_freshnessPeriod.count());
     }
 
+  // PushedData
+  if (isPushed()) {
+    totalLength += prependEmptyBlock(encoder, tlv::PushedData);
+  }
+
   // ContentType
   if (m_type != tlv::ContentType_Blob)
     {
@@ -210,6 +224,12 @@ MetaInfo::wireDecode(const Block& wire)
   }
   else {
     m_type = tlv::ContentType_Blob;
+  }
+
+  // PushedData
+  val = m_wire.find(tlv::PushedData);
+  if (val != m_wire.elements_end()) {
+    m_pushed = true;
   }
 
   // FreshnessPeriod

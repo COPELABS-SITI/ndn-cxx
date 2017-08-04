@@ -89,6 +89,7 @@ enum {
   SelectedDelegation = 32,
 
   LongLivedInterest = 33,
+  PushedData = 34,
 
   AppPrivateBlock1 = 128,
   AppPrivateBlock2 = 32767

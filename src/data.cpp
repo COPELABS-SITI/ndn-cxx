@@ -218,6 +218,15 @@ Data::setFreshnessPeriod(const time::milliseconds& freshnessPeriod)
 }
 
 Data&
+Data::setPushed(const bool pushed)
+{
+  onChanged();
+  m_metaInfo.setPushed(pushed);
+
+  return *this;
+}
+
+Data&
 Data::setFinalBlockId(const name::Component& finalBlockId)
 {
   onChanged();
